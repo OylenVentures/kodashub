@@ -1,0 +1,37 @@
+{
+  "name": "kodashub_server",
+  "version": "1.0.0",
+  "description": "API for the web hosting application.",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "prisma generate",
+    "build": "npm install && npx prisma generate",
+    "start": "npm run swagger",
+    "vercel-build": "prisma generate && prisma migrate deploy",
+    "swagger": "node ./swagger.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "kodashub"
+  ],
+  "author": "Philip Oyelegbin",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.15",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "prisma": "^5.20.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

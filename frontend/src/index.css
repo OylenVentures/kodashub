@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: #13274f;
+  }
+
+@layer base {
+  h1 {
+    @apply text-[34px] font-bold;
+  }
+  h2 {
+    @apply text-3xl font-bold;
+  }
+  h3 {
+    @apply text-2xl font-medium;
+  }
+  h4 {
+    @apply text-xl font-medium;
+  }
+  h5 {
+    @apply text-lg font-light;
+  }
+  p, li, label {
+    @apply text-sm font-light;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Josefin Sans', sans-serif;
+  }
+}
+
+@layer utilities {
+  .btn {
+    @apply bg-purple-700 text-center text-slate-200 transition-all ease-linear duration-300 hover:bg-slate-200 hover:text-purple-700 py-2 px-4 rounded-lg w-max;
+  }
+  .cover-image {
+    @apply w-full;
+  }
+  .form-input {
+    @apply p-2 rounded-md border text-gray-700;
+  }
+  .auth-form {
+    @apply bg-white md:w-2/3 lg:w-2/5 p-10 rounded-md;
+  }
+  .form-group {
+    @apply flex flex-col gap-2 my-2;
+  }
+}

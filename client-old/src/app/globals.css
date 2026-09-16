@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #00b4d8; /*Primary buttons, active tab indicators, high-priority highlights.*/
+  --color-secondary: #0052d4; /*Primary brand gradient end-state, focused input states, secondary buttons.*/
+  --color-dark: #0b132b; /*Headings, main text content, navigation background (in dark mode).*/
+  --color-background: #f8fafc; /*Light mode main canvas background, content container fill.*/
+  --color-card: #ffffff; /*Dashboard cards, pricing tables, modal dialogs.*/
+  --color-border: #e2e8f0; /*Structural dividers, inactive form borders, secondary text.*/
+  --color-success: #10b981; /*SSL active badges, server uptime status indicators.*/
+  --color-warning: #f59e0b; /*Domain expiration warnings, DNS propagation pending states.*/
+
+  --text-heading: #0b132b; /*Page titles, service headers, pricing tier titles.*/
+  --text-subheading: #0052d4; /*Section headers, card titles, feature descriptions.*/
+  --text-body: #1e293b; /*General text, service breakdown lists, knowledge base articles.*/
+  --text-code: #00b4d8; /*DNS records (A, CNAME, MX), terminal logs, cPanel file paths, SSL certificates details.*/
+}
+
+@theme {
+  --color-primary: #00b4d8; /*Primary buttons, active tab indicators, high-priority highlights.*/
+  --color-secondary: #0052d4; /*Primary brand gradient end-state, focused input states, secondary buttons.*/
+  --color-dark: #0b132b; /*Headings, main text content, navigation background (in dark mode).*/
+  --color-background: #f8fafc; /*Light mode main canvas background, content container fill.*/
+  --color-card: #ffffff; /*Dashboard cards, pricing tables, modal dialogs.*/
+  --color-border: #e2e8f0; /*Structural dividers, inactive form borders, secondary text.*/
+  --color-success: #10b981; /*SSL active badges, server uptime status indicators.*/
+  --color-warning: #f59e0b; /*Domain expiration warnings, DNS propagation pending states.*/
+
+  --text-heading: #0b132b; /*Page titles, service headers, pricing tier titles.*/
+  --text-subheading: #0052d4; /*Section headers, card titles, feature descriptions.*/
+  --text-body: #1e293b; /*General text, service breakdown lists, knowledge base articles.*/
+  --text-code: #00b4d8; /*DNS records (A, CNAME, MX), terminal logs, cPanel file paths, SSL certificates details.*/
+}
+
+@layer base {
+  body {
+    @apply bg-[#F8FAFC] text-[#1E293B] antialiased;
+  }
+
+  h1 {
+    @apply text-5xl font-bold text-[#0B132B];
+  }
+
+  h2 {
+    @apply text-4xl font-semibold text-[#0b132b];
+  }
+
+  h3 {
+    @apply text-3xl font-semibold text-[#0B132B];
+  }
+
+  h4 {
+    @apply text-2xl font-medium text-[#0052D4];
+  }
+
+  h5 {
+    @apply text-xl font-medium text-[#0052D4];
+  }
+
+  h6 {
+    @apply text-lg font-medium text-[#0052D4];
+  }
+
+  p {
+    @apply text-base font-normal text-[#1E293B];
+  }
+
+  span {
+    @apply text-sm font-normal text-[#0052D4];
+  }
+}
+
+@layer components {
+  .primary {
+    @apply bg-[#00B4D8] text-white font-semibold py-2 px-4 rounded hover:bg-[#0052D4] transition-colors duration-300;
+  }
+}

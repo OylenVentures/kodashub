@@ -1,0 +1,50 @@
+name: CI Action
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        run: |
+          cd backend
+          npm i
+          npm ci
+          cd ../client
+          npm i
+          npm ci
+
+      # - name: Lint Code with ESLint (Frontend)
+      #   run: |
+      #     cd client
+      #     npm run lint
+
+      # - name: Run E2E Tests (Backend, if present)
+      #   run: |
+      #     cd backend
+      #     npm run e2e-test || echo "E2E tests not found"
+
+      - name: Build the Backend Application
+        run: |
+          cd backend
+          npm run build
+
+      - name: Build the Client Application
+        run: |
+          cd client
+          npm run build
