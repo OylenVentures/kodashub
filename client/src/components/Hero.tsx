@@ -30,7 +30,7 @@ export const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link
                 href="/services"
-                className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-linear-to-r from-blue to-cyan rounded-xl shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 hover:scale-[1.01] transition-all"
+                className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-blue rounded-xl shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 hover:scale-[1.01] transition-all"
               >
                 Resolve An Issue
                 <ArrowRight className="ml-2 h-5 w-5" />

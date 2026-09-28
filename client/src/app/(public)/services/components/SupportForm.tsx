@@ -255,7 +255,7 @@ export const SupportForm = () => {
 
         {/* Security / Privacy Guarantee */}
         <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center gap-3 text-xs text-slate-600">
-          <ShieldCheck size={20} className="text-blue shrink-0" />
+          <ShieldCheck size={20} className="text-cyan shrink-0" />
           <span>
             Your data is strictly confidential. Confidential details like server
             credentials should only be provided after ticket creation via the
@@ -267,7 +267,7 @@ export const SupportForm = () => {
         <FormBtn
           label="Submit Request"
           disabled={isSubmitting}
-          styling="cursor-pointer w-full py-3.5 px-6 rounded-xl text-white font-semibold text-sm bg-linear-to-r from-blue to-cyan hover:opacity-95 shadow-md shadow-cyan-500/10 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          styling="cursor-pointer w-full py-3.5 px-6 rounded-xl text-white font-semibold text-sm bg-blue hover:opacity-70 shadow-md shadow-cyan-500/10 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </form>
     </div>

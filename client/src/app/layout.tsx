@@ -1,6 +1,6 @@
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
-import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -17,20 +17,34 @@ export const metadata = {
     process.env.NEXT_PUBLIC_HOST_URI || "http://localhost:3000",
   ),
   title:
-    "KodasHub - Support and Infrastructure Solutions for Web and Cloud Services",
+    "Kodas Hub - Support and Infrastructure Solutions for Web and Cloud Services",
   description:
-    "KodasHub is a web and infrastructure support service that provides solutions for server, hosting, and DNS errors, as well as domain registration, cloud services, development, and DevOps solutions.",
+    "Kodas Hub is a web and infrastructure support service that provides solutions for server, hosting, and DNS errors, as well as domain registration, cloud services, development, and DevOps solutions.",
   type: "website",
-  author: "KodasHub",
+  keywords: [
+    "Kodas Hub",
+    "Web Support",
+    "Infrastructure Solutions",
+    "Server Errors",
+    "Hosting Errors",
+    "DNS Errors",
+    "Domain Registration",
+    "Cloud Services",
+    "Development Solutions",
+    "DevOps Solutions",
+  ],
+  authors: [
+    { name: "Philip Oyelegbin", url: "https://philip.oyelegbin.name.ng" },
+  ],
   openGraph: {
-    title: "KodasHub - Instant Help for Server, Hosting & DNS Errors",
+    title: "Kodas Hub - Instant Help for Server, Hosting & DNS Errors",
     description:
-      "KodasHub offers web and infrastructure support, domain registration, cloud services, and DevOps solutions",
+      "Kodas Hub offers web and infrastructure support, domain registration, cloud services, and DevOps solutions",
     url: process.env.NEXT_PUBLIC_HOST_URI,
     type: "website",
     locale: "en_US",
     images: "./opengraph-image.png",
-    siteName: "KodasHub",
+    siteName: "Kodas Hub",
   },
   twitter: {
     handle: "@KodasHub",

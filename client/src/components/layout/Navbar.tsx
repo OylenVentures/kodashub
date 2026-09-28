@@ -45,7 +45,7 @@ export const Navbar = () => {
             <LinkBtn
               label="Get Technical Help"
               path="/services#request-form"
-              styling="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue to-cyan rounded-lg shadow-sm hover:opacity-90 transition-opacity"
+              styling="px-4 py-2 text-sm font-semibold text-white bg-blue rounded-lg shadow-sm hover:opacity-70 transition-opacity"
             />
           </div>
 

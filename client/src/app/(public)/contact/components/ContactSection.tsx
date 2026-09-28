@@ -366,7 +366,7 @@ export const ContactSection = () => {
                   <FormBtn
                     label="Send Message"
                     disabled={isSubmitting}
-                    styling="cursor-pointer w-full py-3.5 px-6 rounded-xl text-white font-semibold text-sm bg-linear-to-r from-blue to-cyan hover:opacity-95 shadow-md shadow-cyan-500/10 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    styling="cursor-pointer w-full py-3.5 px-6 rounded-xl text-white font-semibold text-sm bg-blue hover:opacity-70 shadow-md shadow-cyan-500/10 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </form>
               )}

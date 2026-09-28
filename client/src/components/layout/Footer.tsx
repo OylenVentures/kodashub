@@ -43,6 +43,12 @@ export const Footer = () => {
               Technical resolution platform for website errors, domain issues,
               and hosting infrastructure.
             </p>
+            <p className="text-xs leading-relaxed text-slate-400">
+              <span className="text-cyan font-semibold">KodasHub</span> is
+              operated by{" "}
+              <span className="text-cyan font-semibold">Oylen Ventures</span> |
+              RC No. 9775081.
+            </p>
           </div>
 
           <div>
