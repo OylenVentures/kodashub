@@ -60,6 +60,10 @@ async function bootstrap() {
 
   setupSwagger(app);
 
+  app.use('/health', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok', uptime: process.uptime() });
+  });
+
   await app.listen(process.env.PORT ?? 4001, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
