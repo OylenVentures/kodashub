@@ -1,9 +1,13 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../user/entities/user.entity';
-import * as argon from 'argon2';
+import { User } from '../users/entities/user.entity.js';
+import { UserRole } from '../common/enums/role.enum.js';
+import { UserStatus } from '../common/enums/user-status.enum.js';
+import { Logger } from '@nestjs/common';
 
 export class Seed {
+  private readonly logger = new Logger(Seed.name);
+
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
   async seedUsers() {
@@ -11,31 +15,20 @@ export class Seed {
       firstName: process.env.FIRSTNAME || '',
       lastName: process.env.LASTNAME || '',
       email: process.env.EMAIL || '',
-      password: process.env.PASSWORD || '',
-      companyName: 'KodasHub',
-      address: '',
-      phoneNumber: '',
-      city: '',
-      state: '',
-      country: '',
-      zipCode: '',
-      role: 'super_admin',
-      isVerified: true,
-      verificationTime: new Date(),
-      verificationCode: '',
+      status: UserStatus.ACTIVE,
+      role: UserRole.ADMIN,
+      isEmailVerified: true,
     };
 
     const existingUser = await this.userRepo.findOne({
-      where: { email: userData.email },
+      where: { role: UserRole.ADMIN },
     });
-    const hash = await argon.hash(userData.password);
-    userData.password = hash;
 
     if (!existingUser) {
       await this.userRepo.save(userData);
-      console.log('Super Admin seeded successfully!');
+      this.logger.log('Super Admin seeded successfully!');
     } else {
-      console.log('Super Admin already exist, skipping seed.');
+      this.logger.log('Super Admin already exist, skipping seed.');
     }
   }
 }

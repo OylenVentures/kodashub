@@ -1,369 +1,380 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import {
-  LogInUserDto,
-  RegisterUserDto,
-  ResetPasswordDto,
-} from './dto/auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../user/entities/user.entity';
+import { LessThan, Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
-import { Otp } from '../utils/otp';
-import * as jwt from 'jsonwebtoken';
-import { Mail } from '../utils/mail';
-import { LogService } from '../log/log.service';
-import { Request } from 'express';
+import * as crypto from 'crypto';
+import { User } from '../users/entities/user.entity.js';
+import { RefreshToken } from './entities/refresh-token.entity.js';
+import { UsersService } from '../users/users.service.js';
+import { MailService } from '../mail/mail.service.js';
+import { RegisterDto } from './dto/register.dto.js';
+import { UserStatus } from '../common/enums/user-status.enum.js';
+import {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+} from './interfaces/jwt-payload.interface.js';
 
 @Injectable()
 export class AuthService {
+  private readonly maxFailedAttempts: number;
+  private readonly lockMinutes: number;
+
   constructor(
-    @InjectRepository(User)
-    private usersRepo: Repository<User>,
-    private logService: LogService,
-  ) {}
-
-  async createUser(dto: RegisterUserDto) {
-    const user = await this.usersRepo.findOne({
-      where: { email: dto.email.toLowerCase() },
-    });
-    if (user) {
-      throw new BadRequestException('User already exists');
-    }
-
-    dto.email = dto.email.toLowerCase();
-    const hashedPassword = await argon.hash(dto.password);
-    const otp = new Otp().generateOTP();
-    const newUser = this.usersRepo.create({
-      ...dto,
-      password: hashedPassword,
-      verificationCode: otp.token,
-      verificationTime: otp.expiration,
-    });
-    const saveUser = await this.usersRepo.save(newUser);
-
-    const messageBody = `
-      <p>Dear ${saveUser.firstName}</p>
-      <p>Thank you for registering on KodasHub. Please verify your email address to complete your registration.</p>
-      <p>Your verification code is <b>${otp.token}</b>. This code will expire in 10 mins</p>
-      <p>If you did not create this account, please ignore this email</p>
-      <p>Thank you for using KodasHub</p>
-      <p>Best regards,</p>
-      <p><b>The KodasHub Team</b></p>
-      `;
-    const sendMail = await new Mail().sendMail(
-      saveUser.email,
-      'Verify your email',
-      messageBody,
+    @InjectRepository(User) private usersRepository: Repository<User>,
+    @InjectRepository(RefreshToken)
+    private refreshTokensRepository: Repository<RefreshToken>,
+    private usersService: UsersService,
+    private mailService: MailService,
+    private jwtService: JwtService,
+    private config: ConfigService,
+  ) {
+    this.maxFailedAttempts = Number(
+      this.config.get('MAX_FAILED_LOGIN_ATTEMPTS') ?? 5,
     );
+    this.lockMinutes = Number(this.config.get('ACCOUNT_LOCK_MINUTES') ?? 15);
+  }
+
+  // ---------- Registration & email verification ----------
+
+  async register(dto: RegisterDto): Promise<{ message: string }> {
+    const user = await this.usersService.create({
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
+      phone: dto.phone,
+    });
+
+    const rawToken = await this.setVerificationToken(user);
+    await this.mailService.sendVerificationEmail(user, rawToken);
+
     return {
-      message: sendMail.message,
-      result: { id: saveUser.id, email: saveUser.email },
+      message:
+        'Registration successful. Please check your email to verify your account.',
     };
   }
 
-  async resendVerificationCode(email: string) {
-    const user = await this.usersRepo.findOne({
-      where: { email: email.toLowerCase() },
+  async verifyEmail(rawToken: string): Promise<{ message: string }> {
+    const hashed = this.hashToken(rawToken);
+
+    const user = await this.usersRepository.findOne({
+      where: {
+        emailVerificationTokenHash: hashed,
+      },
+      select: {
+        id: true,
+        emailVerificationExpires: true,
+        isEmailVerified: true,
+        email: true,
+        firstName: true,
+      },
     });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (user.isVerified) {
-      throw new BadRequestException('User already verified');
-    }
 
-    const otp = new Otp().generateOTP();
-    user.verificationCode = otp.token;
-    user.verificationTime = otp.expiration;
-    await this.usersRepo.save(user);
-
-    const messageBody = `
-      <p>Dear ${user.firstName}</p>
-      <p>Thank you for registering on KodasHub. Please verify your email address to complete your registration.</p>
-      <p>Your verification code is <b>${otp.token}</b>. This code will expire in 10 mins</p>
-      <p>If you did not create this account, please ignore this email</p>
-      <p>Thank you for using KodasHub</p>
-      <p>Best regards,</p>
-      <p><b>The KodasHub Team</b></p>
-      `;
-    await new Mail().sendMail(user.email, 'Verify your email', messageBody);
-    return { message: 'Verification code resent successfully' };
-  }
-
-  async verifyUser(token: string) {
-    const user = await this.usersRepo.findOne({
-      where: { verificationCode: token },
-    });
-    if (!user) {
-      throw new BadRequestException('Invalid verification code');
-    }
-    if (user.isVerified) {
-      throw new BadRequestException('User already verified');
-    }
-    if (user.verificationTime && user.verificationTime < new Date()) {
-      throw new BadRequestException('Verification code expired');
-    }
-
-    user.isVerified = true;
-    user.verificationCode = '';
-    user.verificationTime = undefined;
-    await this.usersRepo.save(user);
-
-    return { message: 'User verified successfully' };
-  }
-
-  async loginUser(dto: LogInUserDto, req: Request) {
-    const user = await this.usersRepo.findOne({
-      where: { email: dto.email.toLowerCase() },
-    });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    if (!user.isVerified) {
-      throw new UnauthorizedException('User not verified');
-    }
-
-    if (user.isDeleted) {
-      throw new UnauthorizedException('User not found, contact admin');
-    }
-
-    const isPasswordValid = await argon.verify(user.password, dto.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    await this.logService.create(
-      { action: 'login', description: 'User logged in successfully' },
-      user.id,
-      req,
-    );
-
-    const jwtSecret = process.env.JWT_SECRET_KEY;
-    if (jwtSecret === undefined || jwtSecret === null) {
+    if (
+      !user ||
+      !user.emailVerificationExpires ||
+      user.emailVerificationExpires < new Date()
+    ) {
       throw new BadRequestException(
-        'JWT_SECRET_KEY·environment·variable·is·not·configured',
+        'Verification link is invalid or has expired',
       );
     }
 
-    const payload = { sub: user.id, email: user.email };
-    const token = jwt.sign(payload, jwtSecret, {
-      expiresIn: '1h',
-    });
-    return {
-      message: 'User logged in successfully',
-      result: { id: user.id, email: user.email, token },
+    user.isEmailVerified = true;
+    user.emailVerificationTokenHash = null;
+    user.emailVerificationExpires = null;
+    await this.usersRepository.save(user);
+
+    await this.mailService.sendWelcomeEmail(user);
+
+    return { message: 'Email verified successfully. You can now log in.' };
+  }
+
+  async resendVerification(email: string): Promise<{ message: string }> {
+    const genericResponse = {
+      message:
+        'If an account exists and is unverified, a new verification email has been sent.',
     };
+
+    const user = await this.usersService.findByEmail(email);
+    if (!user || user.isEmailVerified) return genericResponse; // don't leak account existence
+
+    const rawToken = await this.setVerificationToken(user);
+    await this.mailService.sendVerificationEmail(user, rawToken);
+
+    return genericResponse;
   }
 
-  async forgotPassword(email: string) {
-    if (!email) throw new BadRequestException('Email is required');
-
-    const user = await this.usersRepo.findOne({
-      where: { email: email.toLowerCase() },
-    });
-    if (!user) throw new NotFoundException('User not found');
-
-    if (user.isDeleted)
-      throw new NotFoundException('User not found, contact admin');
-
-    const otp = new Otp().generateOTP();
-    user.resetPasswordCode = otp.token;
-    user.resetPasswordTime = otp.expiration;
-    await this.usersRepo.save(user);
-
-    const messageBody = `
-      <p>Dear ${user.firstName}</p>
-      <p>Thank you for using KodasHub. Please use the code below to reset your password.</p>
-      <p>Your verification code is <b>${otp.token}</b>. This code will expire in 10 mins</p>
-      <p>If you did not request this, please ignore this email</p>
-      <p>Thank you for using KodasHub</p>
-      <p>Best regards,</p>
-      <p><b>The KodasHub Team</b></p>
-      `;
-    await new Mail().sendMail(user.email, 'Reset your password', messageBody);
-    return { message: 'Password reset code sent successfully' };
+  private async setVerificationToken(user: User): Promise<string> {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    user.emailVerificationTokenHash = this.hashToken(rawToken);
+    user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    await this.usersRepository.save(user);
+    return rawToken;
   }
 
-  async resetPassword(dto: ResetPasswordDto, req: Request) {
-    if (!dto.token) throw new BadRequestException('Token is required');
+  // ---------- Login ----------
 
-    const user = await this.usersRepo.findOne({
-      where: { resetPasswordCode: dto.token },
-    });
-    if (!user) {
-      throw new BadRequestException('Invalid verification code');
-    }
-    if (user.isDeleted) {
-      throw new NotFoundException('User not found, contact admin');
-    }
-    if (user.resetPasswordTime && user.resetPasswordTime < new Date()) {
-      throw new BadRequestException('Verification code expired');
-    }
-    if (dto.newPassword !== dto.confirmPassword) {
-      throw new BadRequestException('Passwords do not match');
-    }
+  /** Called by LocalStrategy. Verifies credentials, enforces lockout policy. */
+  async validateUser(email: string, password: string): Promise<User> {
+    const user = await this.usersService.findByEmailWithPassword(email);
 
-    user.password = await argon.hash(dto.newPassword);
-    user.resetPasswordCode = '';
-    user.resetPasswordTime = new Date();
-
-    await this.usersRepo.save(user);
-    await this.logService.create(
-      {
-        action: 'Reset password',
-        description: 'Password reset successfully',
-      },
-      user.id,
-      req,
+    const invalidCredsError = new UnauthorizedException(
+      'Invalid email or password',
     );
-    return { message: 'Password reset successfully' };
+
+    if (!user) throw invalidCredsError;
+
+    if (user.isLocked()) {
+      throw new ForbiddenException(
+        `Account temporarily locked due to too many failed login attempts. Try again later.`,
+      );
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new ForbiddenException(
+        'This account is not active. Contact support.',
+      );
+    }
+
+    if (!user.password) {
+      throw new BadRequestException(
+        'No password set for this account. Please generate your passcode to log in.',
+      );
+    }
+
+    const passwordMatches = await argon.verify(user.password, password);
+
+    if (!passwordMatches) {
+      await this.registerFailedLogin(user);
+      throw invalidCredsError;
+    }
+
+    if (user?.passwordExpires && user.passwordExpires < new Date()) {
+      throw new BadRequestException(
+        'Passcode has expired. Please generate a new passcode to log in.',
+      );
+    }
+
+    if (!user.isEmailVerified) {
+      throw new ForbiddenException(
+        'Please verify your email address before logging in.',
+      );
+    }
+
+    // Success — reset lockout counters.
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
+    user.password = null;
+    user.passwordExpires = null;
+    await this.usersRepository.save(user);
+
+    return user;
   }
 
-  // async googleAuth(idToken: string, req: Request) {
-  //   if (!idToken) throw new BadRequestException('idToken is required');
+  private async registerFailedLogin(user: User): Promise<void> {
+    user.failedLoginAttempts += 1;
 
-  //   let decodedToken: any;
-  //   let newUser: any;
+    if (user.failedLoginAttempts >= this.maxFailedAttempts) {
+      user.lockUntil = new Date(Date.now() + this.lockMinutes * 60 * 1000);
+      user.failedLoginAttempts = 0;
+    }
 
-  //   try {
-  //     decodedToken = await admin.auth().verifyIdToken(idToken);
+    await this.usersRepository.save(user);
+  }
 
-  //     const { uid, email, name = '', email_verified } = decodedToken;
-  //     if (!email) {
-  //       throw new BadRequestException('Google account has no email');
-  //     }
+  async sendPasscode(email: string): Promise<{ message: string }> {
+    const genericResponse = {
+      message: 'If an account with that email exists, a passcode has been sent',
+    };
 
-  //     let user = await this.usersRepo.findOne({ where: { email } });
-  //     if (!user) {
-  //       newUser = this.usersRepo.create({
-  //         firstName: name.split(' ')[0] || '',
-  //         lastName: name.split(' ').slice(1).join(' ') || '',
-  //         email,
-  //         googleId: uid || undefined,
-  //         firebaseUid: uid || undefined,
-  //         role: 'user',
-  //         isVerified: email_verified ?? true,
-  //       });
+    const user = await this.usersService.findByEmail(email);
+    if (!user) return genericResponse;
+    if (user.isEmailVerified === false) {
+      throw new ForbiddenException(
+        'Please verify your email address before login',
+      );
+    }
 
-  //       await this.usersRepo.save(newUser);
-  //       user = newUser;
-  //     }
+    // generate a 6 digit token
+    const rawPasscode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedPasscode = await argon.hash(rawPasscode);
+    user.password = hashedPasscode;
+    user.passwordExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-  //     await this.logService.create(
-  //       {
-  //         action: 'login',
-  //         description: 'User logged in successfully via google',
-  //       },
-  //       user.id,
-  //       req,
-  //     );
-  //     const token = jwt.sign(
-  //       { sub: user.id, email: user.email },
-  //       process.env.JWT_SECRET_KEY,
-  //       { expiresIn: process.env.JWT_EXPIRATION_TIME || '1h' },
-  //     );
+    await this.usersRepository.save(user);
+    await this.mailService.sendPasscodeEmail(user, rawPasscode);
 
-  //     return {
-  //       message: 'Authentication successful',
-  //       result: { token, user },
-  //     };
-  //   } catch (error) {
-  //     console.error('Google auth error:', error);
-  //     if (newUser?.id) {
-  //       await this.usersRepo.delete(newUser.id);
-  //       console.log('Rolled back partially created Google user');
-  //     }
-  //     throw error;
-  //   }
-  // }
+    return genericResponse;
+  }
 
-  // async appleAuth(dto: object, req: Request) {
-  //   const { identityToken, fullName, email: emailFromClient } = dto;
+  async login(
+    user: User,
+    meta: { ip?: string; userAgent?: string },
+  ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
+    user.lastLoginAt = new Date();
+    user.lastLoginIp = meta.ip;
+    await this.usersRepository.save(user);
 
-  //   if (!identityToken) {
-  //     throw new BadRequestException('identityToken is required');
-  //   }
+    const { accessToken, refreshToken } = await this.issueTokenPair(user, meta);
+    return { accessToken, refreshToken, user };
+  }
 
-  //   let decodedToken: any;
-  //   let newUser: any;
+  // ---------- Token issuance & rotation ----------
 
-  //   try {
-  //     decodedToken = await verifyAppleIdentityToken(identityToken);
+  private async issueTokenPair(
+    user: User,
+    meta: { ip?: string; userAgent?: string },
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const accessPayload: AccessTokenPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+    const accessToken = this.jwtService.sign<AccessTokenPayload>(
+      accessPayload,
+      {
+        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: '15m',
+        // expiresIn: (this.config.get<string>('JWT_ACCESS_EXPIRY') ??'15m') as string,
+      },
+    );
 
-  //     const { sub: appleId, email: emailFromApple } = decodedToken;
-  //     const email = emailFromApple || emailFromClient || null;
+    const refreshRecord = await this.refreshTokensRepository.save(
+      this.refreshTokensRepository.create({
+        userId: user.id,
+        expiresAt: this.parseExpiryToDate(
+          this.config.get<string>('JWT_REFRESH_EXPIRY') ?? '7d',
+        ),
+        createdByIp: meta.ip,
+        userAgent: meta.userAgent,
+      }),
+    );
 
-  //     let user = await this.usersRepo.findOne({ where: { appleId } });
+    const refreshPayload: RefreshTokenPayload = {
+      sub: user.id,
+      jti: refreshRecord.id,
+    };
+    const refreshToken = this.jwtService.sign<RefreshTokenPayload>(
+      refreshPayload,
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+        // expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRY') ?? '7d') as string,
+      },
+    );
 
-  //     if (!user) {
-  //       if (!email) {
-  //         throw new BadRequestException(
-  //           'Apple sign-in did not provide an email. Please re-authenticate and allow email sharing.',
-  //         );
-  //       }
+    return { accessToken, refreshToken };
+  }
 
-  //       // Link by email if user exists
-  //       user = await this.usersRepo.findOne({ where: { email } });
+  /**
+   * Rotates a refresh token: validates it, revokes it, issues a fresh pair.
+   * If a token that was ALREADY revoked/rotated is presented again, this is
+   * treated as likely theft — every session for that user is revoked immediately.
+   */
+  async refreshTokens(
+    rawRefreshToken: string,
+    meta: { ip?: string; userAgent?: string },
+  ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
+    let payload: RefreshTokenPayload;
+    try {
+      payload = this.jwtService.verify<RefreshTokenPayload>(rawRefreshToken, {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
 
-  //       if (user) {
-  //         if (user.appleId && user.appleId !== appleId) {
-  //           throw new ConflictException(
-  //             'This email is already linked to another Apple account.',
-  //             'APPLE_ACCOUNT_CONFLICT',
-  //           );
-  //         }
+    const record = await this.refreshTokensRepository.findOne({
+      where: { id: payload.jti },
+    });
 
-  //         if (!user.appleId) {
-  //           user.appleId = appleId;
-  //           await this.usersRepo.save(user);
-  //         }
-  //       }
-  //     }
+    if (!record || record.userId !== payload.sub) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
 
-  //     if (!user) {
-  //       newUser = this.usersRepo.create({
-  //         firstName: fullName?.givenName || '',
-  //         lastName: fullName?.familyName || '',
-  //         email,
-  //         appleId,
-  //         role: 'user',
-  //         isVerified: true,
-  //       });
+    if (record.revoked) {
+      // Reuse of a rotated/revoked token — possible theft. Nuke all sessions.
+      await this.revokeAllUserTokens(record.userId);
+      throw new UnauthorizedException(
+        'Refresh token reuse detected. All sessions have been logged out for your security.',
+      );
+    }
 
-  //       await this.usersRepo.save(newUser);
-  //       user = newUser;
-  //     }
+    if (record.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        'Refresh token has expired. Please log in again.',
+      );
+    }
 
-  //     await this.logService.create(
-  //       {
-  //         action: 'login',
-  //         description: 'User logged in successfully via apple',
-  //       },
-  //       user.id,
-  //       req,
-  //     );
-  //     const token = jwt.sign(
-  //       { sub: user.id, email: user.email },
-  //       process.env.JWT_SECRET_KEY,
-  //       { expiresIn: process.env.JWT_EXPIRATION_TIME || '1h' },
-  //     );
+    const user = await this.usersService.findById(payload.sub);
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new ForbiddenException('This account is not active.');
+    }
 
-  //     return {
-  //       message: 'Authentication successful',
-  //       result: { token, user },
-  //     };
-  //   } catch (error) {
-  //     console.error('Apple auth error:', error);
-  //     if (newUser?._id) {
-  //       await this.usersRepo.delete(newUser._id);
-  //     }
+    const { accessToken, refreshToken } = await this.issueTokenPair(user, meta);
 
-  //     throw new UnauthorizedException('Invalid Apple token');
-  //   }
-  // }
+    // Rotate: mark old token as revoked/replaced (fetch the new jti back out of it)
+    const newPayload = this.jwtService.decode(
+      refreshToken,
+    ) as RefreshTokenPayload;
+    record.revoked = true;
+    record.replacedByTokenId = newPayload.jti;
+    await this.refreshTokensRepository.save(record);
+
+    return { accessToken, refreshToken, user };
+  }
+
+  async logout(rawRefreshToken: string): Promise<void> {
+    try {
+      const payload = this.jwtService.verify<RefreshTokenPayload>(
+        rawRefreshToken,
+        {
+          secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        },
+      );
+      await this.refreshTokensRepository.update(
+        { id: payload.jti },
+        { revoked: true },
+      );
+    } catch {
+      // Already invalid/expired — nothing to revoke. Logout should still succeed client-side.
+    }
+  }
+
+  async revokeAllUserTokens(userId: string): Promise<void> {
+    await this.refreshTokensRepository.update(
+      { userId, revoked: false },
+      { revoked: true },
+    );
+  }
+
+  // ---------- Helpers ----------
+
+  private hashToken(rawToken: string): string {
+    return crypto.createHash('sha256').update(rawToken).digest('hex');
+  }
+
+  private parseExpiryToDate(expiry: string): Date {
+    const match = /^(\d+)([smhd])$/.exec(expiry);
+    if (!match) return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7d
+    const value = Number(match[1]);
+    const unitMs = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 }[
+      match[2]
+    ] as number;
+    return new Date(Date.now() + value * unitMs);
+  }
+
+  /** Optional maintenance task — wire up with @nestjs/schedule if desired. */
+  async purgeExpiredTokens(): Promise<void> {
+    await this.refreshTokensRepository.delete({
+      expiresAt: LessThan(new Date()),
+    });
+  }
 }
