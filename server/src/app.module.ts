@@ -15,7 +15,7 @@ import { UsersModule } from './users/users.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { TicketsModule } from './tickets/tickets.module.js';
 import { User } from './users/entities/user.entity.js';
-// import { DomainsModule } from './domains/domains.module.js';
+// import { DomainsModule } from './domains/domains.module';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -27,7 +27,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     //   serviceId: 'server',
     // }),
     ServeStaticModule.forRoot({
-      rootPath: join(import.meta.dirname, '..', 'public'),
+      rootPath: join(__dirname, '..', 'public'),
     }),
     ConfigModule.forRoot({ isGlobal: true, expandVariables: true }),
     TypeOrmModule.forRoot({
