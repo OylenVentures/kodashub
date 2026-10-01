@@ -19,7 +19,7 @@ const config = new DocumentBuilder()
   .addServer('https://api.kh.oylengroup.com.ng', 'Production')
   .build();
 
-function setupSwagger(app: INestApplication<any>) {
+function setupApiDocs(app: INestApplication<any>) {
   const document = SwaggerModule.createDocument(app, config, {
     deepScanRoutes: true,
   });
@@ -65,4 +65,4 @@ function setupSwagger(app: INestApplication<any>) {
   );
 }
 
-export default setupSwagger;
+export default setupApiDocs;

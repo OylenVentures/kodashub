@@ -1,15 +1,14 @@
+import cookieParser from 'cookie-parser';
+import { NextFunction, Request, Response } from 'express';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import {
+  ClassSerializerInterceptor,
   ValidationPipe,
   VersioningType,
-  ClassSerializerInterceptor,
 } from '@nestjs/common';
-import { exit } from 'process';
-import { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import setupApiDocs from './apidocs.js';
-import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -24,12 +23,12 @@ async function bootstrap() {
     ? process.env.ALLOWED_CORS.split(',').map((origin) => origin.trim())
     : [];
 
-  if (!allowedCors || allowedCors.length === 0) {
-    console.warn(
-      'ALLOWED_CORS environment variable is not set. CORS will be enabled for all origins.',
-    );
-    exit(1);
-  }
+  // if (!allowedCors || allowedCors.length === 0) {
+  //   console.warn(
+  //     'ALLOWED_CORS environment variable is not set. CORS will be enabled for all origins.',
+  //   );
+  //   exit(1);
+  // }
   app.enableCors({
     origin: allowedCors.length > 0 ? allowedCors : '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -64,8 +63,7 @@ async function bootstrap() {
     res.status(200).json({ status: 'ok', uptime: process.uptime() });
   });
 
-  await app.listen(process.env.PORT ?? 4001, '0.0.0.0');
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
-
-bootstrap();
+await bootstrap();

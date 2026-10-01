@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { createObserveModule } from '@nestjs/observe';
+// import { createObserveModule } from '@nestjs/observe';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -17,7 +17,7 @@ import { TicketsModule } from './tickets/tickets.module.js';
 import { User } from './users/entities/user.entity.js';
 // import { DomainsModule } from './domains/domains.module';
 
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
+// export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
