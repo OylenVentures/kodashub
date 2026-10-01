@@ -8,7 +8,7 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import setupApiDocs from './apidocs.js';
-import helmet from 'helmet';
+// import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -16,7 +16,7 @@ async function bootstrap() {
     bodyParser: true,
   });
 
-  app.use(helmet());
+  // app.use(helmet());
   app.use(cookieParser(process.env.COOKIE_SECRET));
 
   const allowedCors: string[] = process.env.ALLOWED_CORS
