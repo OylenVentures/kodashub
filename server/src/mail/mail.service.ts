@@ -27,7 +27,7 @@ export class MailService {
       // },
     });
     this.frontendUrl = this.config.get<string>('FRONTEND_URL') ?? '';
-    this.from = `${this.config.get<string>('MAIL_FROM')}` ?? 'KodasHub Team <no-reply@oylengroup.com>';
+    this.from = `${this.config.get<string>('MAIL_FROM')}`;
   }
 
   async sendVerificationEmail(user: User, rawToken: string): Promise<void> {
