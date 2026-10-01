@@ -1,9 +1,9 @@
 export const Logo_Light = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 520 120"
-    width="100%"
-    height="100%"
+    viewBox="0 0 400 120"
+    width="200"
+    height="80"
   >
     <defs>
       <linearGradient id="kh-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -107,9 +107,9 @@ export const Logo_Light = () => (
 export const Logo_Dark = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 520 120"
-    width="100%"
-    height="100%"
+    viewBox="0 0 400 120"
+    width="200"
+    height="80"
   >
     <defs>
       <linearGradient id="kh-gradient" x1="0%" y1="100%" x2="100%" y2="0%">

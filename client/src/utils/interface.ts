@@ -45,6 +45,32 @@ export interface StorageSyncItem {
 }
 
 // State types
+export interface AuthState {
+  accessToken: string | null;
+  userEmail: string;
+  isLoading: boolean;
+  message: string | null;
+  error: string | null;
+  setUserEmail: (email: string) => void;
+  setAccessToken: (token: string | null) => void;
+  signup: (
+    data: RegisterUserItem,
+  ) => Promise<{ message: string | null; error: string | null }>;
+  verifyEmail: (token: string) => Promise<void>;
+  resendVerification: (
+    email: string,
+  ) => Promise<{ message: string | null; error: string | null }>;
+  sendPasscode: (
+    email: string,
+  ) => Promise<{ message: string | null; error: string | null }>;
+  login: (
+    email: string,
+    passcode: string,
+  ) => Promise<{ message: string | null; error: string | null }>;
+  logout: () => void;
+  logoutAll: () => Promise<void>;
+}
+
 export interface UserState {
   users: string[];
   currentUser: string[];
@@ -113,6 +139,7 @@ export interface LogState {
   };
 }
 
+// Form types
 export interface RequestItem {
   name: string;
   service: string;
@@ -129,4 +156,24 @@ export interface ContactItem {
   email: string;
   subject: string;
   message: string;
+}
+
+export interface SendEmailItem {
+  email: string;
+}
+
+export interface RegisterUserItem {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+}
+
+export interface VerifyUserItem {
+  token: string;
+}
+
+export interface LoginUserItem {
+  email: string;
+  password: string;
 }
