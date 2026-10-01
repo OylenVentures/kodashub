@@ -7,8 +7,8 @@ import {
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
-import helmet from 'helmet';
 import setupApiDocs from './apidocs.js';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
