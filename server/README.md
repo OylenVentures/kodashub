@@ -1,245 +1,124 @@
-# KodasHub API
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
----
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-## Features
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-### Auth & User Module
+## Description
 
-A complete, production-grade authentication module for a NestJS + TypeORM backend
-(Postgres assumed — swap the driver in `app.module.ts` if you use something else).
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-#### What's included
-
-- **Registration** with email verification (token hashed at rest, 24h expiry, no
-  plaintext token ever stored in the DB).
-- **Login** via email/password, with account lockout after repeated failed
-  attempts (`MAX_FAILED_LOGIN_ATTEMPTS`, `ACCOUNT_LOCK_MINUTES`) and a generic
-  "invalid email or password" error so accounts can't be enumerated.
-- **JWT access tokens** (short-lived, 15m default) sent in the response body —
-  the frontend keeps these in memory, not localStorage.
-- **Rotating refresh tokens** (7d default) delivered as an `httpOnly`,
-  `Secure`, `SameSite=Strict` cookie scoped to `/auth`. Each refresh token is
-  backed by a DB row (`refresh_tokens`) so sessions can be revoked server-side.
-  Reusing an already-rotated/revoked token triggers automatic revocation of
-  **all** of that user's sessions (theft-detection pattern).
-- **Forgot / reset password**, and **change password** (both revoke all other
-  sessions and email a "your password changed" notice).
-- **Global auth by default**: `JwtAuthGuard` is registered as an `APP_GUARD`,
-  so every route requires a valid access token unless explicitly marked
-  `@Public()`. This is deliberately fail-closed — you can't forget to protect
-  a new controller.
-- **Role-based access control** scaffolding (`UserRole`, `@Roles()`,
-  `RolesGuard`) ready for your support / developer / devops / admin split,
-  and for gating the future domain-reseller endpoints (e.g. only `ADMIN` can
-  push nameserver changes to Blesta on someone else's behalf).
-- **Rate limiting** via `@nestjs/throttler`, tightened further on
-  register/login/forgot-password/reset-password.
-- **Password policy**: argon2, min 8 chars, upper+lower+number+symbol.
-- **`helmet`**, strict CORS with credentials, global `ValidationPipe`
-  (whitelist + forbid unknown fields), and automatic stripping of
-  sensitive fields (password hash, tokens) from every JSON response via
-  `class-transformer`'s `@Exclude()` + `ClassSerializerInterceptor`.
-
-### Support Tickets Module
-
-Lets clients open support requests and any staff/admin respond, with status
-tracking the back-and-forth automatically.
-
-#### Status flow
-
-```
-Client creates ticket        -> OPEN
-Staff/admin replies          -> ANSWERED   (+ email sent to the client)
-Client replies               -> CUSTOMER_REPLY
-Saff working on ticket       -> IN_PROGRESS
-Staff/admin closes           -> CLOSED
-```
-
-The status always reflects "whose turn it is to respond" — `ANSWERED` means
-the client has something new to read, `CUSTOMER_REPLY` means staff do.
-
-#### Design notes
-
-- **The opening message is the first reply, not a separate field.** A
-  ticket's conversation thread (`TicketReply`, ordered by `createdAt`) holds everything, including the original request — simpler than juggling a `ticket.description` field plus a separate replies list, and it's how most helpdesk systems (Zendesk, WHMCS, Blesta) model it.
-- **Any staff role can answer any ticket** — `isStaffRole()` (from
-  `common/enums/role.enum.ts`) covers `ADMIN`, `SUPPORT_AGENT`,
-  `DEVELOPER`, and `DEVOPS_ENGINEER`, matching the three service lines.
-  There's no hard assignment/routing — `assignedStaffId` is set
-  automatically to whoever answers first, purely for visibility (e.g "who's been handling this"), and never restricts who else can reply.
-- **A closed ticket can be replied to directly** — `addReply` reopens a ticket and update the status.
-- **No attachments**, per the current spec — `CreateReplyDto`/`CreateTicketDto` are plain text.
-- **Email only fires in one direction right now**: client gets notified when staff answers/status updated (per the spec). Staff are _not_ currently emailed when a client replies (`CUSTOMER_REPLY`) — see "Suggested next steps".
-
-### Domains Module (Blesta integration)
-
-Wraps Blesta as the billing/registrar backend for domain search, purchase,
-transfer, nameserver updates, and DNS management.
-
-#### How it fits together
-
-```md
-Client → NestJS API → BlestaApiService → Blesta REST API → Registrar module → Registry
-↘ DnsProvider (adapter) → either a Blesta plugin OR the registrar's own API
-```
-
-- **BlestaApiService** (`blesta/blesta-api.service.ts`) is a thin, generic caller for `{model}/{method}.json` with Basic Auth, timeouts, and retry on network/5xx errors only (never retries a 4xx). Everything else builds on it.
-- **DomainsService** owns the business logic: it calls Blesta for the parts that are genuinely standard (clients, services/packages/pricing), persists a local `Domain` row per purchase for fast ownership checks and listing, and delegates DNS record CRUD to a swappable `DnsProvider`.
-- **TldPackageResolver** maps a TLD to the Blesta package + pricing IDs an admin configures in Blesta itself (Packages > a package per TLD/registrar, with register/renew/transfer pricing terms).
-
-#### Important: read this before wiring up nameservers/DNS in production
-
-Blesta's public REST API is solid for core billing objects (clients,
-packages, pricing, services) — but it does **not** uniformly expose registrar
--module-specific actions like domain availability search or DNS record CRUD
-as clean REST endpoints. Those live inside each module's own admin/client
-"tabs" (Namesilo, OpenSRS, ResellerClub, CentralNic, etc. each implement
-these differently, and some don't support DNS editing at all — only
-delete-and-recreate).
-
-Two ways this module handles that gap, both already wired as an interface
-(`DnsProvider` in `blesta/interfaces/dns-provider.interface.ts`) so you can
-swap the implementation without touching `DomainsService`:
-
-1. **Companion Blesta plugin (recommended if you support several
-   registrars).** Build a small Blesta plugin exposing a model (e.g.
-   `domain_tools.dns`) with `get`/`add`/`edit`/`delete` methods. Inside
-   Blesta's own PHP code, that plugin can instantiate the registrar module's
-   class directly and call its real methods — trivial there, painful from
-   outside. Once it exists, it's reachable at your normal API base URL as
-   `domain_tools.dns/get.json`, using the same Basic Auth you already have.
-   Set `BLESTA_DNS_PLUGIN_MODEL` (and `BLESTA_AVAILABILITY_PLUGIN_MODEL` for
-   search) once it's deployed — `BlestaPluginDnsProvider` is ready to call it.
-
-2. **Call the registrar directly.** If you're only using one registrar and
-   it has its own DNS API (many do — NameSilo, Cloudflare Registrar, etc.),
-   skip Blesta entirely for DNS and call the registrar. `NamesiloDnsProvider`
-   is a complete worked example. Point `DomainsModule`'s `DNS_PROVIDER` at it.
-
-Nameserver updates (as opposed to DNS _records_) are more standardized:
-Blesta's official registrar modules store `ns1`–`ns5` as service fields, so
-`Services::edit` with those keys is a safe, working pattern across most
-modules — that's what `DomainsService.updateNameservers` uses. Availability
-search has the same gap as DNS records and follows path 1 or 2 above.
-
-#### Blesta admin setup checklist
-
-1. Install and configure your registrar module (Settings > Company > Modules).
-2. Create one Package per TLD (or per TLD group) using that module, with
-   register/renew/transfer pricing terms.
-3. Create API credentials: Settings > Company > API Access. Use Basic Auth
-   over HTTPS only.
-4. Fill `BLESTA_TLD_PACKAGE_MAP` in `.env` with each package's ID and its
-   three pricing IDs (visible in the package's edit screen / via the
-   `packages`/`get` API call).
-5. (Optional but recommended) build and deploy the companion plugin described
-   above, then set `BLESTA_DNS_PLUGIN_MODEL` / `BLESTA_AVAILABILITY_PLUGIN_MODEL`.
-
----
-
-## Setup
+## Project setup
 
 ```bash
-npm install
-cp .env.template .env   # fill in real secrets — see below
+$ npm install
 ```
 
-Generate strong secrets:
+## Compile and run the project
 
 ```bash
-openssl rand -hex 64   # run 3x for JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, COOKIE_SECRET
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
 ```
 
-With `NODE_ENV=development`, `synchronize: true` will create tables
-automatically for local dev. **Switch to TypeORM migrations before
-production** — never run `synchronize` against a prod database.
+## Run tests
 
 ```bash
-npm run start:dev
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
 ```
 
----
+## Deployment
 
-## Endpoints (prefixed `/api/v1`)
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-| Method | Route                                | Auth            | Notes                                                                                                         |
-| ------ | ------------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------- |
-| POST   | `/auth/register`                     | Public          | Sends verification email                                                                                      |
-| POST   | `/auth/verify-email`                 | Public          | Body: `{ token }`                                                                                             |
-| POST   | `/auth/resend-verification`          | Public          | Body: `{ email }`                                                                                             |
-| POST   | `/auth/login`                        | Public          | Sets refresh cookie, returns access token                                                                     |
-| POST   | `/auth/refresh`                      | Public (cookie) | Rotates refresh token                                                                                         |
-| POST   | `/auth/logout`                       | Public (cookie) | Revokes current session                                                                                       |
-| POST   | `/auth/logout-all`                   | **Protected**   | Revokes every session                                                                                         |
-| POST   | `/auth/forgot-password`              | Public          | Always returns a generic message                                                                              |
-| POST   | `/auth/reset-password`               | Public          | Body: `{ token, password, confirmPassword }`                                                                  |
-| POST   | `/auth/change-password`              | **Protected**   | Revokes other sessions                                                                                        |
-| GET    | `/auth/me`                           | **Protected**   | Current user                                                                                                  |
-| GET    | `/users/me`                          | **Protected**   | Current user profile                                                                                          |
-| PATCH  | `/users/me`                          | **Protected**   | Update name/phone                                                                                             |
-| POST   | `/mail/contact`                      | Public          | Send contact form                                                                                             |
-| POST   | `/mail/request-service`              | Public          | Send new request ticket                                                                                       |
-| POST   | `/support-tickets`                   | **Protected**   | Creates ticket, status `OPEN`                                                                                 |
-| GET    | `/support-tickets`                   | **Protected**   | Clients see only their own; staff/admin see all. Filters: `status`, `department`, `priority`, `page`, `limit` |
-| GET    | `/support-tickets/:id`               | **Protected**   | Full thread, oldest first                                                                                     |
-| POST   | `/support-tickets/:id/reply`         | **Protected**   | Staff reply → `ANSWERED` + client email; client reply → `CUSTOMER_REPLY`                                      |
-| POST   | `/support-tickets/:id/status`        | **Protected**   | Staff update → `STATUS` + client email; client reply → `CUSTOMER_REPLY`                                       |
-| GET    | `/domains/search?query=&tlds=`       | **Protected**   | Availability across configured/given TLDs                                                                     |
-| GET    | `/domains`                           | **Protected**   | Current user's domains                                                                                        |
-| GET    | `/domains/:id`                       | **Protected**   | One domain (owner or staff)                                                                                   |
-| POST   | `/domains/purchase`                  | **Protected**   | Register a new domain                                                                                         |
-| POST   | `/domains/transfer`                  | **Protected**   | Transfer a domain in (needs EPP/auth code)                                                                    |
-| PATCH  | `/domains/:id/nameservers`           | **Protected**   | Update nameservers                                                                                            |
-| GET    | `/domains/:id/dns-records`           | **Protected**   | List DNS records                                                                                              |
-| POST   | `/domains/:id/dns-records`           | **Protected**   | Create a DNS record                                                                                           |
-| PATCH  | `/domains/:id/dns-records/:recordId` | **Protected**   | Update a DNS record                                                                                           |
-| DELETE | `/domains/:id/dns-records/:recordId` | **Protected**   | Delete a DNS record                                                                                           |
-| POST   | `/domains/:id/sync`                  | **Protected**   | **Staff only** — re-pull status from Blesta                                                                   |
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
----
+```bash
+$ npm install -g @nestjs/mau
+$ mau deploy
+```
 
-## Field names you should double-check against your setup
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
-A few parameter names in `domains.service.ts` (`clients/add` fields,
-`auth_code` for transfers, `ns1`–`ns5`) are the conventional names used by
-Blesta's officially maintained registrar modules, but they're not
-enforced by Blesta core — they're whatever the module you install defines
-as its service fields. Before going live, open your chosen module's package
-edit screen in Blesta admin (or its source on github.com/blesta/module-*)
-and confirm the exact field keys, then adjust the marked spots in
-`domains.service.ts`.
+## Observability
 
----
+In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
 
-## Frontend integration notes
+[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
 
-- Send `credentials: 'include'` (fetch) or `withCredentials: true` (axios) on
-  every request so the refresh cookie is sent/received.
-- Store the access token in memory (e.g. a module-level variable or React
-  context), not `localStorage`/`sessionStorage` — mitigates XSS token theft.
-- On a 401 from an access-token-protected route, call `/auth/refresh` once,
-  then retry the original request; if refresh also fails, redirect to login.
+- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
+- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
+- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
+- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
+- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
+- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
+- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
+- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
 
----
+To add it to this project:
 
-## Suggested next steps for your platform
+```bash
+$ npm install @nestjs/observe
+```
 
-1. **Auth module**:
-   - Consider adding optional **2FA (TOTP)** on top of this — the `User` entity and login flow are structured so a `twoFactorEnabled` / `twoFactorSecret` field and an extra verification step can be dropped in without touching the token/rotation logic.
+Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
 
-2. **Support tickets module**:
-   - Add a `GET /support-tickets/:id/replies` count or "unread" flag if you want
-     the ticket list to show at-a-glance which tickets need attention.
+The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
 
-3. Add `@nestjs/schedule` to run `AuthService.purgeExpiredTokens()` daily.
+## Resources
 
-4. **Domains module**:
-   - Add a webhook receiver (or a scheduled job calling `syncFromBlesta`) so
-     domain status/expiry stays current without polling from the client.
-   - Add a `DomainRenewalService` calling `services/edit` with the renewal
-     pricing term, or `services/renew` if your Blesta version exposes it.
-   - Extend `TldPackageResolver` to read from a DB table once you're selling
-     more than a handful of TLDs, so admins can manage it without redeploying.
+Check out a few resources that may come in handy when working with NestJS:
 
----
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## Stay in touch
+
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
+
+## License
+
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

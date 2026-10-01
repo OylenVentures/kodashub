@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
-// import helmet from 'helmet';
+import helmet from 'helmet';
 
 const config = new DocumentBuilder()
   .setTitle(process.env.APP_NAME || 'NestJs API')
@@ -24,26 +24,26 @@ function setupApiDocs(app: INestApplication<any>) {
     deepScanRoutes: true,
   });
 
-  // app.use(
-  //   '/docs/api',
-  //   helmet({
-  //     contentSecurityPolicy: {
-  //       directives: {
-  //         defaultSrc: ["'self'"],
-  //         scriptSrc: ["'self'", "'unsafe-inline'"],
-  //         scriptSrcElem: [
-  //           "'self'",
-  //           "'unsafe-inline'",
-  //           'https://cdn.jsdelivr.net',
-  //         ],
-  //         styleSrc: ["'self'", "'unsafe-inline'"],
-  //         imgSrc: ["'self'", 'data:', 'https:'],
-  //         connectSrc: ["'self'", 'https:'],
-  //         fontSrc: ["'self'", 'data:', 'https:'],
-  //       },
-  //     },
-  //   }),
-  // );
+  app.use(
+    '/docs/api',
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrcElem: [
+            "'self'",
+            "'unsafe-inline'",
+            'https://cdn.jsdelivr.net',
+          ],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'", 'https:'],
+          fontSrc: ["'self'", 'data:', 'https:'],
+        },
+      },
+    }),
+  );
 
   app.use(
     '/docs/api',
