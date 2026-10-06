@@ -144,6 +144,27 @@ export class MailService {
     return { message: 'Message received' };
   }
 
+  // private async send(
+  //   to: string,
+  //   subject: string,
+  //   html: string,
+  //   replyTo?: string,
+  // ): Promise<void> {
+  //   try {
+  //     await this.transporter.sendMail({
+  //       from: this.from,
+  //       to,
+  //       subject,
+  //       html,
+  //       replyTo,
+  //     });
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `Failed to send email to ${to}: ${(err as Error).message}`,
+  //     );
+  //   }
+  // }
+
   private async send(
     to: string,
     subject: string,
@@ -151,15 +172,24 @@ export class MailService {
     replyTo?: string,
   ): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: this.from,
-        to,
-        subject,
-        html,
-        replyTo,
+      await fetch('https://api.postmarkapp.com/email', {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-Postmark-Server-Token':
+            this.config.get<string>('MAIL_PASSWORD') || '',
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          From: this.from,
+          To: to,
+          Subject: subject,
+          HtmlBody: html,
+          ReplyTo: replyTo,
+          MessageStream: 'outbound',
+        }),
       });
     } catch (err) {
-      console.log(err);
       this.logger.error(
         `Failed to send email to ${to}: ${(err as Error).message}`,
       );
