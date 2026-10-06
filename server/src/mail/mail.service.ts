@@ -172,7 +172,7 @@ export class MailService {
     replyTo?: string,
   ): Promise<void> {
     try {
-      await fetch('https://api.postmarkapp.com/email', {
+      const resp = await fetch('https://api.postmarkapp.com/email', {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
@@ -189,7 +189,10 @@ export class MailService {
           MessageStream: 'outbound',
         }),
       });
+
+      console.log('Postmark response status:', resp.status);
     } catch (err) {
+      console.error('Error sending email via Postmark:', err);
       this.logger.error(
         `Failed to send email to ${to}: ${(err as Error).message}`,
       );
