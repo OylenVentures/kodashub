@@ -159,6 +159,7 @@ export class MailService {
         replyTo,
       });
     } catch (err) {
+      console.log(err);
       this.logger.error(
         `Failed to send email to ${to}: ${(err as Error).message}`,
       );
