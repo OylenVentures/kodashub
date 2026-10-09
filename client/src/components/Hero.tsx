@@ -32,15 +32,15 @@ export const Hero = () => {
                 href="/services"
                 className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-blue rounded-xl shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 hover:scale-[1.01] transition-all"
               >
-                Resolve An Issue
+                Explore Services
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-              {/* <Link
-                href="/hosting"
-                className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-navy bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+              <Link
+                href="/auth/register"
+                className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-navy bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
               >
-                Explore Hosting Plans
-              </Link> */}
+                Get Started
+              </Link>
             </div>
 
             {/* Quick Metrics */}

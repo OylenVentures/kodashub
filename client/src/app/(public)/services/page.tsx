@@ -56,7 +56,7 @@ export default function ServicesPage() {
         <ServicesCatalog />
 
         {/* Section 2: Interactive Form Section */}
-        <section className="py-16 bg-slate-100/60 border-t border-slate-200">
+        {/* <section className="py-16 bg-slate-100/60 border-t border-slate-200">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-navy">
@@ -70,7 +70,7 @@ export default function ServicesPage() {
 
             <SupportForm />
           </div>
-        </section>
+        </section> */}
       </main>
 
       <Footer />

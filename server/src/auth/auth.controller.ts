@@ -110,7 +110,7 @@ export class AuthController {
   @Public()
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({
-    summary: 'Send passcode',
+    summary: 'Login a user',
     description: 'Generate a passcode for the user and send it via email',
   })
   @ApiOkResponse({
@@ -126,7 +126,7 @@ export class AuthController {
   @ApiForbiddenResponse({
     description: 'Email not verified',
   })
-  @Post('send-passcode')
+  @Post('login')
   @HttpCode(HttpStatus.OK)
   async sendPasscode(@Body() dto: SendEmailDto): Promise<{ message: string }> {
     return await this.authService.sendPasscode(dto.email);
@@ -136,7 +136,7 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(LocalAuthGuard)
   @ApiOperation({
-    summary: 'User login',
+    summary: 'Verify passcode',
     description: 'Authenticate a user and return access and refresh tokens',
     requestBody: {
       description: 'User passcode',
@@ -171,7 +171,7 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials',
   })
-  @Post('login')
+  @Post('verify-passcode')
   @HttpCode(HttpStatus.OK)
   async login(
     @CurrentUser() user: User,
@@ -234,7 +234,7 @@ export class AuthController {
 
   @Public()
   @ApiOperation({
-    summary: 'User logout',
+    summary: 'Logout a user',
     description:
       'Log out the user by revoking the refresh token and clearing the cookie',
   })

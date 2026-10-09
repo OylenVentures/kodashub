@@ -2,9 +2,10 @@ import {
   loginUser,
   logout,
   logoutAll,
+  refreshToken,
   registerUser,
   resendVerification,
-  sendPasscode,
+  verifyPasscode,
   verifyUser,
 } from "@/api/auth";
 import { AuthState } from "@/utils/interface";
@@ -24,9 +25,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await registerUser(data);
-
-      if (response.statusCode === 201) {
-        set({ userEmail: response.user.email, isLoading: false });
+      if (!response.statusCode) {
+        set({ message: response.message, isLoading: false });
         return { message: response.message, error: null };
       } else {
         set({ message: null, isLoading: false, error: response.message });
@@ -42,14 +42,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await verifyUser({ token });
-
-      if (!response.error) {
+      if (!response.statusCode) {
         set({ message: response.message, isLoading: false });
+        return { message: response.message, error: null };
       } else {
-        set({ message: null, isLoading: false, error: response.error });
+        set({ message: null, isLoading: false, error: response.message });
+        return { message: null, error: response.message };
       }
     } catch (err: any) {
       set({ message: null, isLoading: false, error: err.message });
+      return { message: null, error: err.message };
     }
   },
 
@@ -57,6 +59,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await resendVerification({ email });
+      if (response.statusCode) {
+        set({ isLoading: false, error: response.message });
+        return { message: null, error: response.message };
+      }
       set({ isLoading: false });
       return { message: response.message, error: null };
     } catch (err: any) {
@@ -65,10 +71,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  sendPasscode: async (email) => {
+  login: async (email) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await sendPasscode({ email });
+      const response = await loginUser({ email });
+      if (response.statusCode) {
+        set({ isLoading: false, error: response.message });
+        return { message: null, error: response.message };
+      }
       set({ isLoading: false });
       return { message: response.message, error: null };
     } catch (err: any) {
@@ -77,18 +87,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  login: async (email, passcode) => {
+  verifyPasscode: async (email, passcode) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await loginUser({ email, password: passcode });
-
-      if (response.statusCode === 200) {
+      const response = await verifyPasscode({ email, password: passcode });
+      if (response.accessToken) {
         set({
           accessToken: response.accessToken,
           userEmail: response.user.email,
           isLoading: false,
         });
-        return { message: response.message, error: null };
+        return { message: "Login successful", error: null };
       } else {
         set({ isLoading: false, error: response.message });
         return { message: null, error: response.message };
@@ -96,6 +105,33 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (err: any) {
       set({ isLoading: false, error: err.message });
       return { message: null, error: err.message };
+    }
+  },
+
+  refreshToken: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await refreshToken();
+
+      if (response.accessToken) {
+        set({
+          accessToken: response.accessToken,
+          userEmail: response.user.email,
+          isLoading: false,
+        });
+        return {
+          accessToken: response.accessToken,
+          userEmail: response.user.email,
+        };
+      } else {
+        set({ isLoading: false, error: response.message });
+        return {
+          error: response.message,
+        };
+      }
+    } catch (err: any) {
+      set({ isLoading: false, error: err.message });
+      return { error: err.message };
     }
   },
 

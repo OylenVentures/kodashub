@@ -18,21 +18,21 @@ function VerifyContent() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setErrorMessage("No verification token provided in the URL.");
-      return;
-    }
-
-    verifyEmail(token)
-      .then(() => setStatus("success"))
-      .catch((err) => {
+    (async function () {
+      if (!token) {
         setStatus("error");
-        setErrorMessage(
-          err.response?.data?.message ||
-            "Verification link is invalid or expired.",
-        );
-      });
+        setErrorMessage("No verification token provided in the URL.");
+        return;
+      }
+
+      const response = await verifyEmail(token);
+      if (response.error) {
+        setStatus("error");
+        setErrorMessage(response.error);
+      } else {
+        setStatus("success");
+      }
+    })();
   }, [token, verifyEmail]);
 
   return (

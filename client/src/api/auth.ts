@@ -34,16 +34,7 @@ export const resendVerification = async (dto: SendEmailItem) => {
   }
 };
 
-export const sendPasscode = async (dto: SendEmailItem) => {
-  try {
-    const response = await apiHandler(`auth/send-passcode`, "POST", dto);
-    return response;
-  } catch (error) {
-    return error;
-  }
-};
-
-export const loginUser = async (dto: LoginUserItem) => {
+export const loginUser = async (dto: SendEmailItem) => {
   try {
     const response = await apiHandler(`auth/login`, "POST", dto);
     return response;
@@ -52,10 +43,26 @@ export const loginUser = async (dto: LoginUserItem) => {
   }
 };
 
+export const verifyPasscode = async (dto: LoginUserItem) => {
+  try {
+    const response = await apiHandler(`auth/verify-passcode`, "POST", dto);
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
 export const refreshToken = async () => {
   try {
-    const response = await apiHandler(`auth/refresh`, "POST");
-    return response;
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      },
+    );
+    return await response.json();
   } catch (error) {
     return error;
   }

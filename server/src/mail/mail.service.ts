@@ -31,7 +31,7 @@ export class MailService {
   }
 
   async sendVerificationEmail(user: User, rawToken: string): Promise<void> {
-    const link = `${this.frontendUrl}/verify-email?token=${rawToken}`;
+    const link = `${this.frontendUrl}/auth/verify-email?token=${rawToken}`;
     await this.send(
       user.email,
       'Verify your email address',
@@ -58,7 +58,7 @@ export class MailService {
     ticketId: string,
     subject: string,
   ): Promise<void> {
-    const link = `${this.frontendUrl}/support/tickets/${ticketId}`;
+    const link = `${this.frontendUrl}/dashboard/tickets/${ticketId}`;
     await this.send(
       user.email,
       `Re: ${subject}`,
@@ -75,7 +75,7 @@ export class MailService {
     subject: string,
     status: string,
   ): Promise<void> {
-    const link = `${this.frontendUrl}/support/tickets/${ticketId}`;
+    const link = `${this.frontendUrl}/dashboard/tickets/${ticketId}`;
     await this.send(
       user.email,
       `Re: ${subject}`,
@@ -172,7 +172,7 @@ export class MailService {
     replyTo?: string,
   ): Promise<void> {
     try {
-      const resp = await fetch('https://api.postmarkapp.com/email', {
+      const response = await fetch('https://api.postmarkapp.com/email', {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
@@ -189,10 +189,10 @@ export class MailService {
           MessageStream: 'outbound',
         }),
       });
-
-      console.log('Postmark response status:', resp.status);
+      this.logger.log(
+        `Email sent successfully with status: ${response.statusText}`,
+      );
     } catch (err) {
-      console.error('Error sending email via Postmark:', err);
       this.logger.error(
         `Failed to send email to ${to}: ${(err as Error).message}`,
       );

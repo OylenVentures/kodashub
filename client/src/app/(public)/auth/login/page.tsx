@@ -21,7 +21,7 @@ type FormData = yup.InferType<typeof schema>;
 
 export default function SendPasscodePage() {
   const router = useRouter();
-  const { sendPasscode, error } = useAuthStore();
+  const { login } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -32,7 +32,7 @@ export default function SendPasscodePage() {
   });
 
   const onSubmit = async (data: FormData) => {
-    const response = await sendPasscode(data.email);
+    const response = await login(data.email);
     if (response.error) {
       toast.error(response.error);
       return;
@@ -51,12 +51,6 @@ export default function SendPasscodePage() {
       subtitle="Enter your email to receive a secure login passcode"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {error && (
-          <div className="p-3 text-xs bg-red-50 border border-red-200 text-red-600 rounded-xl">
-            {error}
-          </div>
-        )}
-
         <div>
           <label
             htmlFor="email"

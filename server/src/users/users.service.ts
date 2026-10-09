@@ -5,13 +5,17 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as crypto from 'crypto';
 import { User } from './entities/user.entity.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { MailService } from '../mail/mail.service.js';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
+    private mailService: MailService,
   ) {}
 
   async findById(id: string): Promise<User> {
@@ -58,5 +62,35 @@ export class UsersService {
 
   async save(user: User): Promise<User> {
     return this.usersRepository.save(user);
+  }
+
+  async createUser(dto: CreateUserDto): Promise<{ message: string }> {
+    const user = await this.create({
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
+      phone: dto.phone,
+      role: dto.role,
+    });
+
+    const rawToken = await this.setVerificationToken(user);
+    await this.mailService.sendVerificationEmail(user, rawToken);
+
+    return {
+      message:
+        'User created successfully. Verification email sent to the user.',
+    };
+  }
+
+  private async setVerificationToken(user: User): Promise<string> {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    user.emailVerificationTokenHash = this.hashToken(rawToken);
+    user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    await this.usersRepository.save(user);
+    return rawToken;
+  }
+
+  private hashToken(rawToken: string): string {
+    return crypto.createHash('sha256').update(rawToken).digest('hex');
   }
 }

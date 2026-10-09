@@ -1,42 +1,105 @@
-// API BASE URL HANDLER
-import { useUserStore } from "../store/user.store";
-import toast from "react-hot-toast";
+import { useAuthStore } from "../store/auth.store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const apiHandler = async (endpoint: string, method: string, body?: any) => {
+let refreshPromise: Promise<string | null> | null = null;
+
+const isPublicEndpoint = (endpoint: string) => endpoint.startsWith("auth/");
+
+const refreshAccessToken = async (): Promise<string | null> => {
+  if (!refreshPromise) {
+    refreshPromise = useAuthStore
+      .getState()
+      .refreshToken()
+      .then((result) => {
+        if (result.error || !result.accessToken) {
+          return null;
+        }
+        return result.accessToken;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
+};
+
+const redirectToLogin = () => {
+  useAuthStore.getState().setAccessToken(null);
+  if (typeof window !== "undefined") {
+    window.location.href = "/auth/login";
+  }
+};
+
+const getValidAccessToken = async (): Promise<string | null> => {
+  const token = useAuthStore.getState().accessToken;
+  if (token) {
+    return token;
+  }
+
   try {
+    const newToken = await refreshAccessToken();
+    return newToken;
+  } catch {
+    redirectToLogin();
+    return null;
+  }
+};
+
+const apiHandler = async (endpoint: string, method: string, body?: unknown) => {
+  try {
+    const publicEndpoint = isPublicEndpoint(endpoint);
+    let accessToken = publicEndpoint ? null : await getValidAccessToken();
+    if (!publicEndpoint && !accessToken) {
+      return { success: false, error: "Unauthorized access." };
+    }
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-    const token = useUserStore.getState().token;
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-      method: method,
-      headers: headers,
+    let response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+      method,
+      headers,
       body: body ? JSON.stringify(body) : undefined,
       credentials: "include",
     });
 
-    // Simulated interceptor: Handle 401 globally (skipping tool API, as 3rd party keys might throw 401s)
-    // if (response.status === 401 && !endpoint.startsWith("tool/")) {
-    //   toast.error("Unauthorized access. Please log in again.");
-    //   useUserStore.getState().action.logout();
-    //   window.location.href = "/account";
-    //   // Return an object that won't blow up the stores
-    //   return { success: false, error: "Unauthorized access." };
-    // }
+    // If a protected endpoint returns 401, attempt one token refresh and retry
+    if (response.status === 401 && !publicEndpoint) {
+      try {
+        accessToken = await refreshAccessToken();
+        if (!accessToken) throw new Error("Session expired");
 
-    const data = await response.json();
-    return data;
-  } catch (error: any) {
+        headers.Authorization = `Bearer ${accessToken}`;
+        response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+          credentials: "include",
+        });
+      } catch {
+        redirectToLogin();
+        return { success: false, error: "Unauthorized access." };
+      }
+    }
+
+    // If still 401 after retry, the session is truly expired
+    if (response.status === 401) {
+      redirectToLogin();
+      return { success: false, error: "Unauthorized access." };
+    }
+
+    return await response.json();
+  } catch (error: unknown) {
     return {
       success: false,
-      message: error.message || "An unexpected error occurred.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.",
     };
   }
 };

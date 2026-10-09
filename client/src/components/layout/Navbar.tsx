@@ -37,16 +37,16 @@ export const Navbar = () => {
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-4">
-            {/* <LinkBtn
-              label="Sign In"
-              path="/login"
-              styling="text-sm font-semibold text-navy hover:text-blue"
-            /> */}
             <LinkBtn
+              label="Sign In"
+              path="/auth/login"
+              styling="text-sm font-semibold text-navy hover:text-blue"
+            />
+            {/* <LinkBtn
               label="Get Technical Help"
               path="/services#request-form"
               styling="px-4 py-2 text-sm font-semibold text-white bg-blue rounded-lg shadow-sm hover:opacity-70 transition-opacity"
-            />
+            /> */}
           </div>
 
           {/* Mobile Menu Button */}
@@ -73,16 +73,16 @@ export const Navbar = () => {
           ))}
 
           <div className="pt-4 flex flex-col gap-2">
-            {/* <LinkBtn
-              label="Sign In"
-              path="/login"
-              styling="w-full text-center py-2 font-semibold text-navy border border-slate-200 rounded-lg"
-            /> */}
             <LinkBtn
+              label="Sign In"
+              path="/auth/login"
+              styling="w-full text-center py-2 font-semibold text-navy border border-slate-200 rounded-lg"
+            />
+            {/* <LinkBtn
               label="Get Technical Help"
               path="/services#request-form"
               styling="w-full text-center py-2 font-semibold text-white bg-blue rounded-lg"
-            />
+            /> */}
           </div>
         </div>
       )}

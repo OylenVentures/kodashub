@@ -1,16 +1,23 @@
 // API body types
 export interface UserItem {
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  email: string;
-  address?: string;
-  phoneNumber?: string;
-  password: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  zipCode?: string;
+  id?: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  password?: string;
+  passwordExpires?: Date;
+  phone?: string;
+  role?: string;
+  status?: string;
+  isEmailVerified?: boolean;
+  emailVerificationTokenHash?: string;
+  emailVerificationExpires?: Date;
+  failedLoginAttempts?: number;
+  lockUntil?: Date;
+  lastLoginAt?: Date;
+  lastLoginIp?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface DomainItem {
@@ -24,26 +31,6 @@ export interface CartItem {
   nameservers?: string[];
 }
 
-export interface VoltCalcItem {
-  previousReading: number;
-  currentReading: number;
-  tariffBand: string;
-}
-
-export interface StorageSyncItem {
-  fileType: string;
-  prevStorageName: string;
-  prevApiKey: string;
-  prevSecretKey: string;
-  prevRegion?: string;
-  newStorageName: string;
-  newApiKey: string;
-  newSecretKey: string;
-  newRegion?: string;
-  prevAccountId?: string;
-  newAccountId?: string;
-}
-
 // State types
 export interface AuthState {
   accessToken: string | null;
@@ -51,51 +38,72 @@ export interface AuthState {
   isLoading: boolean;
   message: string | null;
   error: string | null;
+
   setUserEmail: (email: string) => void;
   setAccessToken: (token: string | null) => void;
   signup: (
     data: RegisterUserItem,
   ) => Promise<{ message: string | null; error: string | null }>;
-  verifyEmail: (token: string) => Promise<void>;
-  resendVerification: (
-    email: string,
+  verifyEmail: (
+    token: string,
   ) => Promise<{ message: string | null; error: string | null }>;
-  sendPasscode: (
+  resendVerification: (
     email: string,
   ) => Promise<{ message: string | null; error: string | null }>;
   login: (
     email: string,
+  ) => Promise<{ message: string | null; error: string | null }>;
+  verifyPasscode: (
+    email: string,
     passcode: string,
   ) => Promise<{ message: string | null; error: string | null }>;
+  refreshToken: () => Promise<{
+    accessToken?: string;
+    userEmail?: string;
+    error?: string;
+  }>;
   logout: () => void;
   logoutAll: () => Promise<void>;
 }
 
-export interface UserState {
-  users: string[];
-  currentUser: string[];
-  token: string;
-  loading: boolean;
+export interface TicketState {
+  tickets: TicketItem[];
+  replies: ReplyItem[];
+  total: number;
+  page: number;
+  limit: number;
+  isLoading: boolean;
   message: string;
   error: string;
 
   action: {
-    getUserProfile: () => void;
-    loginUser: (item: UserItem) => void;
-    registerUser: (item: UserItem) => void;
-    updateUserProfile: (item: UserItem) => void;
-    updateUserPassword: (item: {
-      currentPassword: string;
-      newPassword: string;
-      confimPassword: string;
-    }) => void;
-    deleteUserProfile: () => void;
-    createAdminUser: (item: UserItem) => void;
-    getUserDetails: (userId: string) => void;
-    restoreUserAccount: (userId: string) => void;
-    removeUserAccount: (userId: string) => void;
-    clearUser: () => void;
-    logout: () => void;
+    setReplies: (replies: []) => void;
+    listTickets: (
+      data: TicketQueryItem,
+    ) => Promise<{ message?: string; error?: string }>;
+    viewTicket: (id: string) => Promise<{ replies?: string; error?: string }>;
+    createTicket: (
+      data: TicketBodyItem,
+    ) => Promise<{ message?: string; error?: string }>;
+    replyTicket: (
+      id: string,
+      data: TicketReplyItem,
+    ) => Promise<{ ticket?: string; message?: string; error?: string }>;
+  };
+}
+
+export interface UserState {
+  user: [];
+  isLoading: boolean;
+  message: string;
+  error: string;
+
+  action: {
+    setUser: (user: []) => void;
+    getUserProfile: () => Promise<{ user?: []; error?: string }>;
+    updateUserProfile: (
+      item: UserItem,
+    ) => Promise<{ user?: UserItem; error?: string }>;
   };
 }
 
@@ -109,21 +117,6 @@ export interface DomainState {
   action: {
     searchDomain: (item: DomainItem) => void;
     clearDomain: () => void;
-  };
-}
-
-export interface ToolState {
-  voltCalc: string[];
-  storageSync: string[];
-  loading: boolean;
-  message: string;
-  error: string;
-
-  action: {
-    voltCalc: (item: VoltCalcItem) => void;
-    storageSync: (item: StorageSyncItem) => void;
-    clearVoltCalc: () => void;
-    clearStorageSync: () => void;
   };
 }
 
@@ -176,4 +169,52 @@ export interface VerifyUserItem {
 export interface LoginUserItem {
   email: string;
   password: string;
+}
+
+export interface TicketQueryItem {
+  page: number;
+  limit: number;
+  status?: string;
+  department?: string;
+  priority?: string;
+}
+
+export interface TicketBodyItem {
+  department: string;
+  priority: string;
+  subject: string;
+  message: string;
+}
+
+export interface TicketReplyItem {
+  message: string;
+}
+
+export interface TicketItem {
+  id: string;
+  ticketId: string;
+  userId: string;
+  user: UserItem;
+  assignedStaffId?: string;
+  assignedStaff?: UserItem;
+  subject: string;
+  department: string;
+  priority: string;
+  status: string;
+  replies: ReplyItem;
+  lastRepliedAt?: Date;
+  closedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ReplyItem {
+  id: string;
+  ticketId: string;
+  ticket: TicketItem;
+  authorId: string;
+  author: UserItem;
+  isStaffReply: boolean;
+  message: string;
+  createdAt: Date;
 }

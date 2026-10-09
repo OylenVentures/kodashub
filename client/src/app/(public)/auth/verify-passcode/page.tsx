@@ -28,7 +28,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email") || "";
-  const { login, sendPasscode, userEmail, setUserEmail, error } =
+  const { login, verifyPasscode, isLoading, userEmail, setUserEmail } =
     useAuthStore();
   const [email, setEmail] = useState(emailParam || userEmail);
   const {
@@ -51,7 +51,7 @@ function LoginContent() {
   }, [emailParam, userEmail, setUserEmail]);
 
   const onSubmit = async (data: FormData) => {
-    const response = await login(data.email, data.password);
+    const response = await verifyPasscode(data.email, data.password);
     if (response.error) {
       toast.error(response.error);
       return;
@@ -68,7 +68,7 @@ function LoginContent() {
       return;
     }
 
-    const response = await sendPasscode(email);
+    const response = await login(email);
     toast.success(response.message);
   };
 
@@ -78,12 +78,6 @@ function LoginContent() {
       subtitle={`We sent a secure sign-in passcode to ${userEmail || "your email"}`}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {error && (
-          <div className="p-3 text-xs bg-red-50 border border-red-200 text-red-600 rounded-xl">
-            {error}
-          </div>
-        )}
-
         <div>
           <label
             htmlFor="email"
@@ -144,8 +138,9 @@ function LoginContent() {
         <div className="pt-3 flex items-center justify-between text-xs">
           <button
             type="button"
+            disabled={isLoading}
             onClick={handleResendPasscode}
-            className="cursor-pointer text-slate-600 hover:text-blue inline-flex items-center gap-1 transition-colors"
+            className="cursor-pointer text-slate-600 hover:text-blue inline-flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RotateCcw size={12} /> Resend Passcode
           </button>
