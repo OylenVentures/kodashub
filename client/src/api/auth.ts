@@ -54,15 +54,18 @@ export const verifyPasscode = async (dto: LoginUserItem) => {
 
 export const refreshToken = async () => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      },
-    );
-    return await response.json();
+    // const response = await fetch(
+    //   `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh`,
+    //   {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     credentials: "include",
+    //   },
+    // );
+    // return await response.json();
+
+    const response = await apiHandler(`auth/refresh`, "POST");
+    return await response;
   } catch (error) {
     return error;
   }

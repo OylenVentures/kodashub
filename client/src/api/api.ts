@@ -72,7 +72,6 @@ const apiHandler = async (endpoint: string, method: string, body?: unknown) => {
       try {
         accessToken = await refreshAccessToken();
         if (!accessToken) throw new Error("Session expired");
-        console.log("Token refreshed successfully", accessToken);
 
         headers.Authorization = `Bearer ${accessToken}`;
         response = await fetch(`${API_BASE_URL}/${endpoint}`, {
