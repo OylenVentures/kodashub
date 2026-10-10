@@ -1,10 +1,4 @@
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SendEmailDto } from './send-email.dto.js';
 
@@ -33,6 +27,6 @@ export class RegisterDto extends SendEmailDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^\+?[0-9\s\-()]{7,20}$/, { message: 'Phone number is invalid' })
+  // @Matches(/^\+?[0-9\s\-()]{7,20}$/, { message: 'Phone number is invalid' })
   phone?: string;
 }

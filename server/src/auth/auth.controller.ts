@@ -128,8 +128,8 @@ export class AuthController {
   })
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async sendPasscode(@Body() dto: SendEmailDto): Promise<{ message: string }> {
-    return await this.authService.sendPasscode(dto.email);
+  async login(@Body() dto: SendEmailDto): Promise<{ message: string }> {
+    return await this.authService.login(dto.email);
   }
 
   @Public()
@@ -173,7 +173,7 @@ export class AuthController {
   })
   @Post('verify-passcode')
   @HttpCode(HttpStatus.OK)
-  async login(
+  async verifyPasscode(
     @CurrentUser() user: User,
     @Req() req: any,
     @Res({ passthrough: true }) res: any,
@@ -182,7 +182,7 @@ export class AuthController {
       accessToken,
       refreshToken,
       user: loggedInUser,
-    } = await this.authService.login(user, {
+    } = await this.authService.verifyPasscode(user, {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
     });

@@ -163,7 +163,7 @@ export default function NewTicket({ setIsCreateOpen }: NewTicketProps) {
             <FormBtn
               label="Submit Ticket"
               disabled={isSubmitting}
-              styling="cursor-pointer px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue hover:bg-blue/90 shadow-md transition-all"
+              styling="cursor-pointer px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue hover:bg-blue/90 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </form>

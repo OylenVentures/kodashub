@@ -52,7 +52,7 @@ const apiHandler = async (endpoint: string, method: string, body?: unknown) => {
     const publicEndpoint = isPublicEndpoint(endpoint);
     let accessToken = publicEndpoint ? null : await getValidAccessToken();
     if (!publicEndpoint && !accessToken) {
-      return { success: false, error: "Unauthorized access." };
+      return { statusCode: 401, error: "Unauthorized access." };
     }
 
     const headers: Record<string, string> = {
@@ -72,6 +72,7 @@ const apiHandler = async (endpoint: string, method: string, body?: unknown) => {
       try {
         accessToken = await refreshAccessToken();
         if (!accessToken) throw new Error("Session expired");
+        console.log("Token refreshed successfully", accessToken);
 
         headers.Authorization = `Bearer ${accessToken}`;
         response = await fetch(`${API_BASE_URL}/${endpoint}`, {
@@ -82,20 +83,20 @@ const apiHandler = async (endpoint: string, method: string, body?: unknown) => {
         });
       } catch {
         redirectToLogin();
-        return { success: false, error: "Unauthorized access." };
+        return { statusCode: response.status, error: "Unauthorized access." };
       }
     }
 
     // If still 401 after retry, the session is truly expired
     if (response.status === 401) {
       redirectToLogin();
-      return { success: false, error: "Unauthorized access." };
+      return { statusCode: response.status, error: "Unauthorized access." };
     }
 
-    return await response.json();
+    return { statusCode: response.status, ...(await response.json()) };
   } catch (error: unknown) {
     return {
-      success: false,
+      statusCode: error instanceof Response ? error.status : 500,
       message:
         error instanceof Error
           ? error.message

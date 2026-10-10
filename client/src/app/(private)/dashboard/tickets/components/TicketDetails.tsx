@@ -19,6 +19,15 @@ interface TicketDetailsProps {
   setActiveTicket: React.Dispatch<React.SetStateAction<any>>;
 }
 
+const formatDate = (dateString: Date) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 export default function TicketDetails({
   activeTicket,
   setActiveTicket,
@@ -98,7 +107,7 @@ export default function TicketDetails({
                     {`${msg.author.firstName} ${msg.author.lastName || "Agent"}`}
                   </span>
                   <span className="text-[10px] text-slate-400">
-                    {msg.createdAt?.toLocaleDateString()}
+                    {formatDate(msg.createdAt)}
                   </span>
                 </div>
                 <div

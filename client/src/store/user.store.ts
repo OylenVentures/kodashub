@@ -15,7 +15,7 @@ export const useUserStore = create<UserState>((set) => ({
       set({ isLoading: true, error: "" });
       try {
         const response = await getUserProfile();
-        if (response.id) {
+        if (response.statusCode === 200) {
           set({
             user: response,
             isLoading: false,
@@ -43,7 +43,7 @@ export const useUserStore = create<UserState>((set) => ({
       set({ isLoading: true, error: "" });
       try {
         const response = await updateUserProfile(data);
-        if (response.id) {
+        if (response.statusCode === 200) {
           set({ user: response, isLoading: false, error: "" });
           return { user: response };
         } else {

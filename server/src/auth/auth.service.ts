@@ -144,9 +144,7 @@ export class AuthService {
     }
 
     if (!user.password) {
-      throw new BadRequestException(
-        'No password set for this account. Please generate your passcode to log in.',
-      );
+      throw invalidCredsError;
     }
 
     const passwordMatches = await argon.verify(user.password, password);
@@ -157,9 +155,7 @@ export class AuthService {
     }
 
     if (user?.passwordExpires && user.passwordExpires < new Date()) {
-      throw new BadRequestException(
-        'Passcode has expired. Please generate a new passcode to log in.',
-      );
+      throw invalidCredsError;
     }
 
     if (!user.isEmailVerified) {
@@ -189,7 +185,7 @@ export class AuthService {
     await this.usersRepository.save(user);
   }
 
-  async sendPasscode(email: string): Promise<{ message: string }> {
+  async login(email: string): Promise<{ message: string }> {
     const genericResponse = {
       message: 'If an account with that email exists, a passcode has been sent',
     };
@@ -214,7 +210,7 @@ export class AuthService {
     return genericResponse;
   }
 
-  async login(
+  async verifyPasscode(
     user: User,
     meta: { ip?: string; userAgent?: string },
   ): Promise<{ accessToken: string; refreshToken: string; user: User }> {

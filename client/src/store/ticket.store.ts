@@ -29,7 +29,7 @@ export const useTicketStore = create<TicketState>((set) => ({
       set({ isLoading: true, error: "" });
       try {
         const response = await listTickets(data);
-        if (response.data) {
+        if (response.statusCode === 200) {
           set({
             tickets: response.data,
             total: response.total,
@@ -58,7 +58,7 @@ export const useTicketStore = create<TicketState>((set) => ({
       set({ isLoading: true, error: "" });
       try {
         const response = await viewTicket(id);
-        if (response.replies) {
+        if (response.statusCode === 200) {
           set({
             replies: response.replies,
             isLoading: false,
@@ -82,7 +82,7 @@ export const useTicketStore = create<TicketState>((set) => ({
       set({ isLoading: true, error: "" });
       try {
         const response = await createTicket(data);
-        if (response.id) {
+        if (response.statusCode === 201) {
           set({ isLoading: false });
           return { message: "Ticket created" };
         } else {
@@ -104,7 +104,7 @@ export const useTicketStore = create<TicketState>((set) => ({
       set({ isLoading: true, error: "" });
       try {
         const response = await replyTicket(id, data);
-        if (response.id) {
+        if (response.statusCode === 200) {
           set({ isLoading: false });
           return { ticket: response, message: "Reply sent" };
         } else {
