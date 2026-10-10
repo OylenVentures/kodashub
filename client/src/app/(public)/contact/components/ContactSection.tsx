@@ -8,28 +8,12 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
-import { FaFacebook, FaLinkedin, FaTwitter } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { contact } from "@/api/notification";
 import { FormBtn } from "@/components/ui/Button";
-
-const socialLinks = [
-  {
-    icon: <FaTwitter className="w-6 h-6 hover:text-cyan transition-colors" />,
-    path: "https://x.com/kodashub",
-  },
-  {
-    icon: <FaFacebook className="w-6 h-6 hover:text-cyan transition-colors" />,
-    path: "https://www.facebook.com/profile.php?id=61567162132703",
-  },
-  {
-    icon: <FaLinkedin className="w-6 h-6 hover:text-cyan transition-colors" />,
-    path: "#",
-  },
-];
 
 const schema = yup.object().shape({
   name: yup
@@ -93,9 +77,8 @@ export const ContactSection = () => {
                 Get in Touch with Our Team
               </h2>
               <p className="mt-4 text-slate-600 text-sm leading-relaxed">
-                Have questions about our hosting plans, domain registration, or
-                need custom SLA support? Our technical operations team is
-                available 24/7.
+                Have any questions or need custom SLA support? Our technical
+                operations team is available 24/7.
               </p>
             </div>
 
@@ -106,18 +89,15 @@ export const ContactSection = () => {
                   <Mail size={22} />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-navy">
-                    Email Engineering Support
-                  </h4>
+                  <h4 className="text-sm font-bold text-navy">Ticket Portal</h4>
                   <p className="text-xs text-slate-500 mt-0.5">
                     For ticket updates and technical inquiries
                   </p>
                   <Link
-                    href="mailto:support@kodashub.com"
+                    href="/auth/login"
                     className="text-xs font-semibold text-blue hover:underline mt-1 inline-block"
-                    target="_blank"
                   >
-                    support@oylengroup.com.ng
+                    Open Client Portal →
                   </Link>
                 </div>
               </div>
@@ -139,20 +119,6 @@ export const ContactSection = () => {
                     Chat with Support →
                   </Link>
                 </div>
-                {/* <div>
-                  <h4 className="text-sm font-bold text-navy">
-                    Live Chat & Ticket Portal
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Instant triage for active hosting customers
-                  </p>
-                  <Link
-                    href="/login"
-                    className="text-xs font-semibold text-blue hover:underline mt-1 inline-block"
-                  >
-                    Open Client Portal →
-                  </Link>
-                </div> */}
               </div>
 
               <div className="p-5 rounded-2xl bg-bg border border-slate-200/80 flex items-start gap-4">
@@ -177,20 +143,6 @@ export const ContactSection = () => {
               </div>
             </div>
 
-            <div className="flex justify-center items-center gap-4">
-              {socialLinks.map((link, index) => (
-                <Link
-                  key={index}
-                  href={link.path}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-500 hover:text-cyan transition-colors"
-                >
-                  {link.icon}
-                </Link>
-              ))}
-            </div>
-
             {/* Emergency Notice */}
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-3">
               <ShieldAlert
@@ -198,15 +150,18 @@ export const ContactSection = () => {
                 className="text-amber-600 shrink-0 mt-0.5"
               />
               <div>
-                <span className="font-bold">Experiencing a server outage?</span>{" "}
-                If your website is down or DNS is failing, please use the{" "}
-                <a
-                  href="/services#request-form"
+                <span className="font-bold">
+                  Experiencing a technical issue?
+                </span>{" "}
+                If your website is down, DNS is failing or any technical
+                challenge, please{" "}
+                <Link
+                  href="/dashboard/tickets"
                   className="underline font-bold hover:text-amber-900"
                 >
-                  Technical Service Form
-                </a>{" "}
-                to bypass sales queues.
+                  Create a Support Ticket
+                </Link>
+                .
               </div>
             </div>
           </div>
@@ -260,12 +215,12 @@ export const ContactSection = () => {
                       {...register("inquiry")}
                       className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent transition-all"
                     >
-                      <option value="">Select a category</option>
+                      <option value="">[Select Category]</option>
                       <option value="general">General Query</option>
-                      <option value="hosting">Hosting / VPS Sales</option>
-                      <option value="domain">Domain Registration</option>
                       <option value="partnership">Partnerships</option>
-                      <option value="billing">Billing & Invoices</option>
+                      {/* <option value="hosting">Hosting / VPS Sales</option> */}
+                      {/* <option value="domain">Domain Registration</option> */}
+                      {/* <option value="billing">Billing & Invoices</option> */}
                     </select>
                     {errors.inquiry && (
                       <p className="text-xs text-red-500 mt-1">

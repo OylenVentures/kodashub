@@ -29,7 +29,7 @@ export default function DashboardOverviewPage() {
               href="/dashboard/tickets"
               className="w-full py-3 px-4 rounded-xl text-white font-semibold text-xs bg-blue hover:opacity-80 shadow-md flex items-center justify-center gap-2 transition-all text-center"
             >
-              <PlusCircle size={16} /> Open Priority Ticket
+              <PlusCircle size={16} /> View Priority Tickets
             </Link>
           </div>
         </div>

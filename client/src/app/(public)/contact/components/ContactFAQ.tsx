@@ -10,7 +10,7 @@ const faqs = [
   {
     question: "Do you offer custom SLA agreements for enterprise hosting?",
     answer:
-      "Yes. We provide tailored Service Level Agreements for VPS, dedicated servers, and domain registration requiring guaranteed uptime, 15-minute response windows, and dedicated account management.",
+      "Yes. We provide tailored Service Level Agreements for VPS, dedicated servers, and DevOps requiring guaranteed uptime, 15-minute response windows, and dedicated account management.",
   },
   {
     question: "Do you offer custom web application development?",

@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Code2,
 } from "lucide-react";
+import Link from "next/link";
 
 const detailedServices = [
   {
@@ -153,12 +154,12 @@ export const ServicesCatalog = () => {
                   </ul>
                 </div>
 
-                <a
-                  href="#request-form"
+                <Link
+                  href="/dashboard/tickets"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-blue hover:text-navy transition-colors pt-4 border-t border-slate-200/60"
                 >
                   Request Fix For This Issue <ArrowRight size={14} />
-                </a>
+                </Link>
               </div>
             );
           })}

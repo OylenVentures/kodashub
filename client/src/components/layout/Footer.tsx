@@ -9,10 +9,10 @@ const support = [
   { label: "WordPress Restoration and more...", path: "#" },
 ];
 
-const infrastructure = [
-  { label: "Domain Registration", path: "#" },
-  { label: "Shared Web Hosting", path: "#" },
-  { label: "Cloud VPS Hosting", path: "#" },
+const legal = [
+  { label: "Terms & Conditions", path: "/legal/#terms" },
+  { label: "Privacy Policy", path: "/legal/#privacy" },
+  { label: "Refund Policy", path: "/legal/#refund" },
 ];
 
 const socialLinks = [
@@ -26,7 +26,7 @@ const socialLinks = [
   },
   {
     icon: <FaLinkedin className="w-6 h-6 hover:text-cyan transition-colors" />,
-    path: "#",
+    path: "https://linkedin.com/company/oylengroup",
   },
 ];
 
@@ -34,8 +34,8 @@ export const Footer = () => {
   return (
     <footer className="bg-navy text-slate-400 py-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+          <div className="space-y-4 col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center gap-2">
               <Logo_Dark />
             </Link>
@@ -58,12 +58,7 @@ export const Footer = () => {
             <ul className="space-y-2 text-xs">
               {support.map((item, index) => (
                 <li key={index}>
-                  <a
-                    href={item.path}
-                    className="hover:text-cyan transition-colors"
-                  >
-                    {item.label}
-                  </a>
+                  <p>{item.label}</p>
                 </li>
               ))}
             </ul>
@@ -71,17 +66,17 @@ export const Footer = () => {
 
           <div>
             <h4 className="text-sm font-semibold text-white mb-4">
-              Infrastructure
+              Legal & Policies
             </h4>
             <ul className="space-y-2 text-xs">
-              {infrastructure.map((item, index) => (
+              {legal.map((item, index) => (
                 <li key={index}>
-                  <a
+                  <Link
                     href={item.path}
                     className="hover:text-cyan transition-colors"
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

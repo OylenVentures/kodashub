@@ -23,8 +23,7 @@ export default function ContactPage() {
                 Contact KodasHub
               </h1>
               <p className="mt-4 text-slate-300 text-lg leading-relaxed">
-                Connect with our team for hosting inquiries, technical support,
-                domain registration, or hosting questions.
+                Connect with our team for technical support or DevOps needs.
               </p>
             </div>
           </div>

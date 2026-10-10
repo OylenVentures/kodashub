@@ -17,13 +17,13 @@ export default function Welcome() {
             href="/dashboard/tickets"
             className="px-4 py-2.5 rounded-xl bg-white text-navy text-xs font-bold shadow-md hover:bg-slate-100 transition-all flex items-center gap-2"
           >
-            <Ticket size={15} /> Open Support Ticket
+            <Ticket size={15} /> View Support Tickets
           </Link>
           <Link
             href="/dashboard/settings"
             className="px-4 py-2.5 rounded-xl bg-blue/30 border border-white/30 text-white text-xs font-bold backdrop-blur-md hover:bg-blue/50 transition-all flex items-center gap-2"
           >
-            Configure Settings <ArrowRight size={15} />
+            Account Settings <ArrowRight size={15} />
           </Link>
         </div>
       </div>
