@@ -46,7 +46,7 @@ export default function TicketsPage() {
             onClick={() => setIsCreateOpen(true)}
             className="cursor-pointer py-2.5 px-4 rounded-xl text-white font-semibold text-xs bg-blue hover:opacity-80 shadow-md flex items-center justify-center gap-2 transition-all"
           >
-            <Plus size={16} /> Open New Ticket
+            <Plus size={16} /> Create New Ticket
           </button>
         </div>
 
