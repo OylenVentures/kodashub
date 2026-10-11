@@ -293,7 +293,7 @@ export class AuthController {
     return {
       httpOnly: true,
       secure: this.config.get<string>('COOKIE_SECURE') !== 'false',
-      sameSite: 'none' as const, // strict
+      sameSite: 'strict' as const, // strict
       domain: this.config.get<string>('COOKIE_DOMAIN') || undefined,
       path: '/',
       maxAge: Number(

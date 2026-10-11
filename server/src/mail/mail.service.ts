@@ -125,10 +125,10 @@ export class MailService {
   async sendContactForm(contactDto: ContactDto): Promise<{ message: string }> {
     const { name, email, subject, inquiry, message } = contactDto;
 
-    if (!process.env.MAIL_USER) {
-      throw new Error('MAIL_USER environment variable is not set.');
+    if (!process.env.MAIL_FROM) {
+      throw new Error('MAIL_FROM environment variable is not set.');
     }
-    const sendTo = process.env.MAIL_USER;
+    const sendTo = process.env.MAIL_FROM;
 
     await this.send(
       sendTo,
@@ -172,23 +172,26 @@ export class MailService {
     replyTo?: string,
   ): Promise<void> {
     try {
-      const response = await fetch('https://api.postmarkapp.com/email', {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'X-Postmark-Server-Token':
-            this.config.get<string>('MAIL_PASSWORD') || '',
+          'api-key': this.config.get<string>('MAIL_PASSWORD') || '',
         },
         method: 'POST',
         body: JSON.stringify({
-          From: this.from,
-          To: to,
-          Subject: subject,
-          HtmlBody: html,
-          ReplyTo: replyTo,
-          MessageStream: 'outbound',
+          sender: { email: this.from, name: 'KodasHub Team' },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html,
+          ...(replyTo && { replyTo: { email: replyTo } }),
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Brevo API error: ${JSON.stringify(errorData)}`);
+      }
       this.logger.log(
         `Email sent successfully with status: ${response.statusText}`,
       );
@@ -198,4 +201,38 @@ export class MailService {
       );
     }
   }
+
+  // private async send(
+  //   to: string,
+  //   subject: string,
+  //   html: string,
+  //   replyTo?: string,
+  // ): Promise<void> {
+  //   try {
+  //     const response = await fetch('https://api.postmarkapp.com/email', {
+  //       headers: {
+  //         Accept: 'application/json',
+  //         'Content-Type': 'application/json',
+  //         'X-Postmark-Server-Token':
+  //           this.config.get<string>('MAIL_PASSWORD') || '',
+  //       },
+  //       method: 'POST',
+  //       body: JSON.stringify({
+  //         From: this.from,
+  //         To: to,
+  //         Subject: subject,
+  //         HtmlBody: html,
+  //         ReplyTo: replyTo,
+  //         MessageStream: 'outbound',
+  //       }),
+  //     });
+  //     this.logger.log(
+  //       `Email sent successfully with status: ${response.statusText}`,
+  //     );
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `Failed to send email to ${to}: ${(err as Error).message}`,
+  //     );
+  //   }
+  // }
 }
