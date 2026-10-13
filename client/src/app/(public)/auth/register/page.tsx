@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useAuthStore } from "@/store/auth.store";
-import { User, Mail, Building, CheckCircle2 } from "lucide-react";
+import { User, Mail, CheckCircle2 } from "lucide-react";
 import { FormBtn, LinkBtn } from "@/components/ui/Button";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -24,6 +24,10 @@ const schema = yup.object().shape({
     .string()
     .email("Invalid email address format")
     .required("Email address is required"),
+  legal: yup
+    .boolean()
+    .oneOf([true], "You must agree to the Terms and Conditions")
+    .required("You must agree to the Terms and Conditions"),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -42,7 +46,11 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
 
   const onSubmit = async (data: FormData) => {
-    const response = await signup(data);
+    const response = await signup({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+    });
     if (response.error) {
       toast.error(response.error);
       return;
@@ -166,6 +174,25 @@ export default function RegisterPage() {
               </p>
             )}
           </div>
+        </div>
+
+        <div>
+          <div className="relative flex items-baseline gap-2">
+            <input
+              type="checkbox"
+              {...register("legal")}
+              className="pl-9 pr-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue transition-all"
+            />
+            <label className="block text-xs text-slate-700 mb-1">
+              I agree to the{" "}
+              <Link href="/legal" className="text-blue hover:underline">
+                Terms and Conditions
+              </Link>
+            </label>
+          </div>
+          {errors.legal && (
+            <p className="text-xs text-red-500 mt-1">{errors.legal.message}</p>
+          )}
         </div>
 
         <FormBtn

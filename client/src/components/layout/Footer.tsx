@@ -10,9 +10,9 @@ const support = [
 ];
 
 const legal = [
-  { label: "Terms & Conditions", path: "/legal/#terms" },
-  { label: "Privacy Policy", path: "/legal/#privacy" },
-  { label: "Refund Policy", path: "/legal/#refund" },
+  { label: "Terms & Conditions", path: "/legal" },
+  { label: "Privacy Policy", path: "/legal" },
+  { label: "Refund Policy", path: "/legal" },
 ];
 
 const socialLinks = [
@@ -22,7 +22,7 @@ const socialLinks = [
   },
   {
     icon: <FaFacebook className="w-6 h-6 hover:text-cyan transition-colors" />,
-    path: "https://www.facebook.com/profile.php?id=61567162132703",
+    path: "https://facebook.com/profile.php?id=61567162132703",
   },
   {
     icon: <FaLinkedin className="w-6 h-6 hover:text-cyan transition-colors" />,
@@ -30,7 +30,7 @@ const socialLinks = [
   },
   {
     icon: <FaInstagram className="w-6 h-6 hover:text-cyan transition-colors" />,
-    path: "https://www.instagram.com/oylengroup",
+    path: "https://instagram.com/oylengroup",
   },
 ];
 
