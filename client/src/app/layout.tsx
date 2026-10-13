@@ -19,7 +19,7 @@ export const metadata = {
   title:
     "Kodas Hub - Support and Infrastructure Solutions for Web and Cloud Services",
   description:
-    "Kodas Hub is a web and infrastructure support service that provides solutions for server, hosting, and DNS errors, as well as domain registration, cloud services, development, and DevOps solutions.",
+    "Kodas Hub is a web and infrastructure support service that provides solutions for server, hosting, and DNS errors, as well as cloud services, development, and DevOps solutions.",
   type: "website",
   keywords: [
     "Kodas Hub",

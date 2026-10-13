@@ -78,7 +78,7 @@ export const ContactSection = () => {
               </h2>
               <p className="mt-4 text-slate-600 text-sm leading-relaxed">
                 Have any questions or need custom SLA support? Our technical
-                operations team is available 24/7.
+                operations team is available 40 hrs/wk.
               </p>
             </div>
 

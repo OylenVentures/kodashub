@@ -10,7 +10,7 @@ export const Hero = () => {
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-blue text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              24/7 On-Demand Infrastructure & Web Support
+              40 hrs On-Demand Infrastructure & Web Support
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-navy tracking-tight leading-tight">
@@ -54,7 +54,7 @@ export const Hero = () => {
                 <p className="text-xs text-slate-500">Resolution Rate</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-navy">24/7</p>
+                <p className="text-2xl font-bold text-navy">40 hrs</p>
                 <p className="text-xs text-slate-500">Live Diagnostics</p>
               </div>
             </div>

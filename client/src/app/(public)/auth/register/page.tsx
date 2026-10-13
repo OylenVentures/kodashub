@@ -24,7 +24,6 @@ const schema = yup.object().shape({
     .string()
     .email("Invalid email address format")
     .required("Email address is required"),
-  phone: yup.string(),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -164,32 +163,6 @@ export default function RegisterPage() {
             {errors.email && (
               <p className="text-xs text-red-500 mt-1">
                 {errors.email.message}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label
-            htmlFor="phone"
-            className="block text-xs font-semibold text-slate-700 mb-1"
-          >
-            Phone
-          </label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-              <Building size={16} />
-            </span>
-            <input
-              id="phone"
-              type="text"
-              {...register("phone")}
-              placeholder="08012345678"
-              className="w-full pl-9 pr-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue transition-all"
-            />
-            {errors.phone && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.phone.message}
               </p>
             )}
           </div>

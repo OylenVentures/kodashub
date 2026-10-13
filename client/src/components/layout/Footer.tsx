@@ -1,6 +1,6 @@
 import { Logo_Dark } from "@/components/ui/Logo";
 import Link from "next/link";
-import { FaTwitter, FaFacebook, FaLinkedin } from "react-icons/fa";
+import { FaTwitter, FaFacebook, FaLinkedin, FaInstagram } from "react-icons/fa";
 
 const support = [
   { label: "DNS & Domain Configuration", path: "#" },
@@ -27,6 +27,10 @@ const socialLinks = [
   {
     icon: <FaLinkedin className="w-6 h-6 hover:text-cyan transition-colors" />,
     path: "https://linkedin.com/company/oylengroup",
+  },
+  {
+    icon: <FaInstagram className="w-6 h-6 hover:text-cyan transition-colors" />,
+    path: "https://www.instagram.com/oylengroup",
   },
 ];
 
@@ -98,7 +102,10 @@ export const Footer = () => {
         </div>
 
         <div className="pt-8 border-t border-slate-800 text-xs text-center text-slate-500 flex flex-col-reverse md:flex-row justify-evenly items-center gap-4">
-          <p>© {new Date().getFullYear()} KodasHub. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()}{" "}
+            <span className="text-cyan">KodasHub</span>. All rights reserved.
+          </p>
           <div className="flex gap-3">
             {socialLinks.map((link, index) => (
               <Link

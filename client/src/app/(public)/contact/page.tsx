@@ -17,7 +17,7 @@ export default function ContactPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/60 border border-blue-700 text-brand-cyan text-xs font-semibold mb-4">
-                <MessageSquare size={14} /> 24/7 Operations & Support
+                <MessageSquare size={14} /> 40 hrs Operations & Support
               </span>
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
                 Contact KodasHub
