@@ -55,10 +55,9 @@ export class MailService {
 
   async sendTicketReplyNotification(
     user: User,
-    ticketId: string,
     subject: string,
   ): Promise<void> {
-    const link = `${this.frontendUrl}/dashboard/tickets/${ticketId}`;
+    const link = `${this.frontendUrl}/dashboard/tickets`;
     await this.send(
       user.email,
       `Re: ${subject}`,
@@ -71,11 +70,10 @@ export class MailService {
 
   async sendTicketUpdateNotification(
     user: User,
-    ticketId: string,
     subject: string,
     status: string,
   ): Promise<void> {
-    const link = `${this.frontendUrl}/dashboard/tickets/${ticketId}`;
+    const link = `${this.frontendUrl}/dashboard/tickets`;
     await this.send(
       user.email,
       `Re: ${subject}`,

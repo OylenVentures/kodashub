@@ -10,6 +10,14 @@ import { User } from './entities/user.entity.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { MailService } from '../mail/mail.service.js';
+import { ListUserQueryDto } from './dto/list-user.dto.js';
+
+interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
 
 @Injectable()
 export class UsersService {
@@ -54,6 +62,24 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  async listUsers(query: ListUserQueryDto): Promise<PaginatedResult<User>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const qb = this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.firstName != :root', { root: 'Root' })
+      .orderBy('user.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (query.email) qb.andWhere('user.email = :email', { email: query.email });
+    if (query.role) qb.andWhere('user.role = :role', { role: query.role });
+
+    const [data, total] = await qb.getManyAndCount();
+    return { data, total, page, limit };
+  }
+
   async update(id: string, dto: UpdateUserDto): Promise<User> {
     const user = await this.findById(id);
     Object.assign(user, dto);
@@ -80,6 +106,17 @@ export class UsersService {
       message:
         'User created successfully. Verification email sent to the user.',
     };
+  }
+
+  async delete(id: string): Promise<{ message: string }> {
+    const user = await this.findById(id);
+    if (user && user.role === 'admin') {
+      throw new ConflictException('Cannot delete an admin user');
+    }
+
+    await this.usersRepository.remove(user);
+
+    return { message: 'User deleted successfully.' };
   }
 
   private async setVerificationToken(user: User): Promise<string> {

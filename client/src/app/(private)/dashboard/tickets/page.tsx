@@ -20,6 +20,8 @@ export default function TicketsPage() {
   const { tickets, total, isLoading, error } = useTicketStore();
   const { listTickets } = useTicketAction;
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
   const itemsPerPage = 50;
 
   // Modal States
@@ -33,15 +35,65 @@ export default function TicketsPage() {
       await listTickets({
         page: currentPage,
         limit: itemsPerPage,
+        status: statusFilter || undefined,
+        department: departmentFilter || undefined,
       });
     })();
-  }, [currentPage, listTickets]);
+  }, [currentPage, departmentFilter, listTickets, statusFilter]);
+
+  const handleStatusFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setCurrentPage(1);
+    setStatusFilter(event.target.value);
+  };
+
+  const handleDepartmentFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setCurrentPage(1);
+    setDepartmentFilter(event.target.value);
+  };
 
   return (
     <DashboardLayout title="Support Tickets">
       <div className="space-y-6">
         {/* Action Header */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <label htmlFor="status-filter" className="sr-only">
+              Filter tickets by status
+            </label>
+            <select
+              id="status-filter"
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/10"
+            >
+              <option value="">All statuses</option>
+              <option value="open">Open</option>
+              <option value="answered">Answered</option>
+              <option value="customer_reply">Customer reply</option>
+              <option value="in_progress">In progress</option>
+              <option value="closed">Closed</option>
+            </select>
+
+            <label htmlFor="department-filter" className="sr-only">
+              Filter tickets by department
+            </label>
+            <select
+              id="department-filter"
+              value={departmentFilter}
+              onChange={handleDepartmentFilterChange}
+              className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 outline-none transition focus:border-blue focus:ring-2 focus:ring-blue/10"
+            >
+              <option value="">All departments</option>
+              <option value="technical_support">Technical support</option>
+              <option value="development">Development</option>
+              <option value="devops">DevOps</option>
+              <option value="billing">Billing</option>
+            </select>
+          </div>
           <button
             onClick={() => setIsCreateOpen(true)}
             className="cursor-pointer py-2.5 px-4 rounded-xl text-white font-semibold text-xs bg-blue hover:opacity-80 shadow-md flex items-center justify-center gap-2 transition-all"

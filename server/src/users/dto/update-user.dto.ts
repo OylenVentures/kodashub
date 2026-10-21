@@ -1,34 +1,19 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { IsEnum, IsOptional } from 'class-validator';
+import { CreateUserDto } from './create-user.dto.js';
+import { UserStatus } from '../../common/enums/user-status.enum.js';
 
-export class UpdateUserDto {
+export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiPropertyOptional({
-    description: 'The first name of the user',
-    maxLength: 100,
-    example: 'John',
+    description: 'The status of the user',
+    enum: UserStatus,
+    example: UserStatus.SUSPENDED,
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  firstName?: string;
-
-  @ApiPropertyOptional({
-    description: 'The last name of the user',
-    maxLength: 100,
-    example: 'Doe',
+  @IsEnum(UserStatus, {
+    message: `status must be one of the following values: ${Object.values(
+      UserStatus,
+    ).join(', ')}`,
   })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  lastName?: string;
-
-  @ApiPropertyOptional({
-    description: 'The phone number of the user',
-    maxLength: 20,
-    example: '+1 (555) 123-4567',
-  })
-  @IsOptional()
-  @IsString()
-  @Matches(/^\+?[0-9\s\-()]{7,20}$/, { message: 'Phone number is invalid' })
-  phone?: string;
+  status?: string;
 }

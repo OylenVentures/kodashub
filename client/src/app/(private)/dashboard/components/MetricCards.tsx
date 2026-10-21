@@ -10,7 +10,7 @@ export default function MetricCards() {
     (async function () {
       await listTickets({
         page: 1,
-        limit: 50,
+        limit: 100,
         status: "open",
       });
     })();

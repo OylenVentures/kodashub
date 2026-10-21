@@ -104,7 +104,6 @@ export class TicketsService {
       const client = await this.usersService.findById(ticket.userId);
       await this.mailService.sendTicketReplyNotification(
         client,
-        ticket.id,
         ticket.subject,
       );
     }
@@ -128,7 +127,6 @@ export class TicketsService {
     const client = await this.usersService.findById(ticket.userId);
     await this.mailService.sendTicketUpdateNotification(
       client,
-      ticket.id,
       ticket.subject,
       ticket.status,
     );
