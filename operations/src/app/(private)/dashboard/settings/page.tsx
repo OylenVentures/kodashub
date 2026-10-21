@@ -70,7 +70,7 @@ export default function SettingsPage() {
     try {
       logoutAll();
       logout();
-      router.push("/auth/login");
+      router.push("/");
     } catch (err: any) {
       toast.error(
         err.message || "Failed to log out of all devices. Please try again.",
