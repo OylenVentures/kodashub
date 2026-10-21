@@ -35,7 +35,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
         if (result.error || !result.accessToken) {
           // Refresh failed or httpOnly cookie is expired — redirect to login
           useAuthStore.getState().setAccessToken(null);
-          router.replace("/auth/login");
+          router.replace("/");
           return;
         }
 
@@ -44,7 +44,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       } catch {
         // Network error or unexpected failure — redirect to login
         useAuthStore.getState().setAccessToken(null);
-        router.replace("/auth/login");
+        router.replace("/");
       }
     };
 
