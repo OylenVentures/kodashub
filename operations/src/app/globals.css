@@ -1,0 +1,15 @@
+@import "tailwindcss";
+/* @import "tailwindcss/preflight"; */
+
+/* @tailwind utilities; */
+
+@theme {
+  --color-cyan: #00b4d8;
+  --color-blue: #0052d4;
+  --color-navy: #0b132b;
+  --color-bg: #f8fafc;
+  --color-pure: #ffffff;
+  --color-gray: #e2e8f0;
+  --color-emerald: #10b981;
+  --color-amber: #f59e0b;
+}
