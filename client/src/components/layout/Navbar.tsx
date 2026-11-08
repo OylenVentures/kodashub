@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { LinkBtn } from "@/components/ui/Button";
 import { Logo_Light } from "@/components/ui/Logo";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -11,13 +12,13 @@ const navLinks = [
 ];
 
 export const Navbar = () => {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-7xl mx-m-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Logo_Light />
           </Link>
@@ -28,26 +29,18 @@ export const Navbar = () => {
               <Link
                 key={link.label}
                 href={link.path}
-                className="text-sm font-medium text-slate-600 hover:text-blue transition-colors"
+                className={`text-sm font-medium ${pathname === link.path ? "text-blue" : "text-slate-600"} hover:text-blue transition-colors`}
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          {/* Actions */}
-          <div className="hidden md:flex items-center gap-4">
-            <LinkBtn
-              label="Sign In"
-              path="/auth/login"
-              styling="text-sm font-semibold text-navy hover:text-blue"
-            />
-            {/* <LinkBtn
-              label="Get Technical Help"
-              path="/services#request-form"
-              styling="px-4 py-2 text-sm font-semibold text-white bg-blue rounded-lg shadow-sm hover:opacity-70 transition-opacity"
-            /> */}
-          </div>
+          <LinkBtn
+            label="Sign In"
+            path="/auth/login"
+            styling="hidden md:block text-sm font-semibold text-navy px-6 py-3.5 rounded-xl border border-slate-200 hover:text-blue hover:bg-blue hover:text-white transition-colors"
+          />
 
           {/* Mobile Menu Button */}
           <button
@@ -66,23 +59,18 @@ export const Navbar = () => {
             <Link
               key={link.label}
               href={link.path}
-              className="block text-base font-medium text-slate-700 py-2"
+              className={`block text-base font-medium ${pathname === link.path ? "text-blue" : "text-slate-700"} py-2`}
             >
               {link.label}
             </Link>
           ))}
 
-          <div className="pt-4 flex flex-col gap-2">
+          <div className="flex item-center py-4 border border-slate-200 rounded-lg text-navy hover:bg-blue hover:text-white transition-colors">
             <LinkBtn
               label="Sign In"
               path="/auth/login"
-              styling="w-full text-center py-2 font-semibold text-navy border border-slate-200 rounded-lg"
+              styling="w-full text-center font-semibold"
             />
-            {/* <LinkBtn
-              label="Get Technical Help"
-              path="/services#request-form"
-              styling="w-full text-center py-2 font-semibold text-white bg-blue rounded-lg"
-            /> */}
           </div>
         </div>
       )}
