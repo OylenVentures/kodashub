@@ -59,6 +59,7 @@ export class TicketsService {
 
     ticket.lastRepliedAt = openingMessage.createdAt;
     await this.ticketsRepository.save(ticket);
+    await this.mailService.sendNewTicketNotification(ticket.subject);
 
     return this.getTicket(user, ticket.id);
   }
@@ -106,6 +107,8 @@ export class TicketsService {
         client,
         ticket.subject,
       );
+    } else {
+      await this.mailService.sendNewTicketNotification(ticket.subject);
     }
 
     return reply;

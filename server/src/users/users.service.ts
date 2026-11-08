@@ -100,7 +100,7 @@ export class UsersService {
     });
 
     const rawToken = await this.setVerificationToken(user);
-    await this.mailService.sendVerificationEmail(user, rawToken);
+    await this.mailService.sendOpsVerificationEmail(user, rawToken);
 
     return {
       message:

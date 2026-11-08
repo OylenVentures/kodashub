@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
 import { User } from '../users/entities/user.entity.js';
 import { RequestDto } from './dto/request.dto.js';
 import { ContactDto } from './dto/contact.dto.js';
@@ -8,30 +7,28 @@ import { ContactDto } from './dto/contact.dto.js';
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private transporter: nodemailer.Transporter;
   private readonly frontendUrl: string;
   private readonly from: string;
 
   constructor(private config: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.config.get<string>('MAIL_HOST'),
-      port: this.config.get<number>('MAIL_PORT'),
-      secure: this.config.get<number>('MAIL_PORT') === 465,
-      auth: {
-        user: this.config.get<string>('MAIL_USER'),
-        pass: this.config.get<string>('MAIL_PASSWORD'),
-      },
-      // tls: {
-      //   rejectUnauthorized: true,
-      //   minVersion: 'TLSv1.2',
-      // },
-    });
     this.frontendUrl = this.config.get<string>('FRONTEND_URL') ?? '';
     this.from = `${this.config.get<string>('MAIL_FROM')}`;
   }
 
   async sendVerificationEmail(user: User, rawToken: string): Promise<void> {
     const link = `${this.frontendUrl}/auth/verify-email?token=${rawToken}`;
+    await this.send(
+      user.email,
+      'Verify your email address',
+      `<p>Hi ${user.firstName},</p>
+       <p>Please confirm your email address to activate your account:</p>
+       <p><a href="${link}">Verify my email</a></p>
+       <p>This link expires in 24 hours. If you didn't create this account, you can ignore this email.</p>`,
+    );
+  }
+
+  async sendOpsVerificationEmail(user: User, rawToken: string): Promise<void> {
+    const link = `https://kh-ops.oylengroup.com/auth/verify-email?token=${rawToken}`;
     await this.send(
       user.email,
       'Verify your email address',
@@ -50,6 +47,24 @@ export class MailService {
        <p>Your passcode is: <strong>${rawPasscode}</strong></p>
        <p>This passcode will expire in <strong>5 minutes</strong>.</p>
        <p>If you didn't request this, you can safely ignore this email.</p>`,
+    );
+  }
+
+  async sendNewTicketNotification(subject: string): Promise<void> {
+    const link = `https://kh-ops.oylengroup.com/dashboard/tickets`;
+
+    if (!process.env.MAIL_FROM) {
+      throw new Error('MAIL_FROM environment variable is not set.');
+    }
+
+    const sendTo = process.env.MAIL_FROM;
+
+    await this.send(
+      sendTo,
+      `${subject || 'New Support Ticket'}`,
+      `<p>Hi Support Team,</p>
+       <p>A new support ticket has been created with the subject: <b>${subject}</b>.</p>
+       <p><a href="${link}">View tickets</a></p>`,
     );
   }
 
